@@ -1,0 +1,91 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../models/user_model.dart';
+
+/// Service untuk menangani autentikasi user
+class AuthService {
+  // Base URL API
+  static const String baseUrl = 'https://jobseeker-database.vercel.app/api';
+
+  /// Fungsi untuk login user
+  /// Mengembalikan Map berisi success, message, token, dan user
+  Future<Map<String, dynamic>> loginUser(String email, String password) async {
+    try {
+      // Endpoint login
+      final url = Uri.parse('$baseUrl/auth/login');
+
+      // Body request
+      final body = jsonEncode({
+        'email': email,
+        'password': password,
+      });
+
+      // Kirim POST request ke API
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
+      );
+
+      // Parse response body
+      final responseData = jsonDecode(response.body);
+
+      // Cek apakah login berhasil
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        // Simpan token ke SharedPreferences
+        final token = responseData['token'];
+        await _saveToken(token);
+
+        // Parse user data
+        final user = UserModel.fromJson(responseData['user']);
+
+        // Return response sukses
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'Login successful',
+          'token': token,
+          'user': user,
+        };
+      } else {
+        // Return response gagal dari API
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Login failed',
+        };
+      }
+    } catch (e) {
+      // Handle error (network error, parsing error, dll)
+      return {
+        'success': false,
+        'message': 'An error occurred: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Fungsi private untuk menyimpan token ke SharedPreferences
+  Future<void> _saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+  }
+
+  /// Fungsi untuk mengambil token dari SharedPreferences
+  Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
+
+  /// Fungsi untuk logout (hapus token)
+  Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+  }
+
+  /// Fungsi untuk cek apakah user sudah login
+  Future<bool> isLoggedIn() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}

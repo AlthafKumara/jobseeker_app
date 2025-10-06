@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jobseeker_app/views/auth/onboarding_view.dart';
 import 'package:jobseeker_app/views/auth/splash_screen.dart';
+import 'package:jobseeker_app/views/auth/login_view.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,6 +20,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/splash': (context) => SplashScreen(),
         '/onboarding' : (context) => OnboardingView(),
+        '/login': (context) => LoginView(),
       },
       
     );
