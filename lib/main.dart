@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobseeker_app/views/auth/onboarding_view.dart';
+import 'package:jobseeker_app/views/auth/signup_view.dart';
 import 'package:jobseeker_app/views/auth/splash_screen.dart';
 import 'package:jobseeker_app/views/auth/login_view.dart';
 
@@ -14,16 +15,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      
       debugShowCheckedModeBanner: false,
-      initialRoute: '/splash',
+      initialRoute: '/signup',
       routes: {
         '/splash': (context) => SplashScreen(),
-        '/onboarding' : (context) => OnboardingView(),
+        '/onboarding': (context) => OnboardingView(),
         '/login': (context) => LoginView(),
+        '/signup': (context) => SignupView(),
       },
-      
     );
   }
 }
-

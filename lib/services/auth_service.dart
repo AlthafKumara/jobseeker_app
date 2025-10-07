@@ -83,9 +83,62 @@ class AuthService {
     await prefs.remove('token');
   }
 
-  /// Fungsi untuk cek apakah user sudah login
-  Future<bool> isLoggedIn() async {
-    final token = await getToken();
-    return token != null && token.isNotEmpty;
+  /// Fungsi untuk register user baru
+  /// Mengembalikan Map berisi success, message, token, dan user
+  Future<Map<String, dynamic>> registerUser(
+      String name, String email, String password) async {
+    try {
+      // Endpoint register
+      final url = Uri.parse('$baseUrl/auth/register');
+
+      // Body request
+      final body = jsonEncode({
+        'name': name,
+        'email': email,
+        'password': password,
+      });
+
+      // Kirim POST request ke API
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
+      );
+
+      // Parse response body
+      final responseData = jsonDecode(response.body);
+
+      // Cek apakah register berhasil
+      if (response.statusCode == 201 && responseData['success'] == true) {
+        // Simpan token ke SharedPreferences
+        final token = responseData['token'];
+        await _saveToken(token);
+
+        // Parse user data
+        final user = UserModel.fromJson(responseData['user']);
+
+        // Return response sukses
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'Registration successful',
+          'token': token,
+          'user': user,
+        };
+      } else {
+        // Return response gagal dari API
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Registration failed',
+        };
+      }
+    } catch (e) {
+      // Handle error (network error, parsing error, dll)
+      return {
+        'success': false,
+        'message': 'An error occurred: ${e.toString()}',
+      };
+    }
   }
 }
