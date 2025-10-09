@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jobseeker_app/widgets/colors.dart';
-import '../../services/auth_service.dart';
-import '../../models/user_model.dart';
+import '../../models/signup_data.dart';
+import 'signup_role_view.dart';
 
 class SignupView extends StatefulWidget {
   const SignupView({super.key});
@@ -11,96 +11,74 @@ class SignupView extends StatefulWidget {
 }
 
 class _SignupViewState extends State<SignupView> {
-  // Controllers untuk TextFormField
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // Instance AuthService
-  final AuthService _authService = AuthService();
-
-  // State untuk loading indicator
   bool _isLoading = false;
-
-  // State untuk show/hide password
   bool _obscurePassword = true;
+  bool _isEmailValid = true;
+  String? _emailErrorText;
 
   @override
   void dispose() {
-    // Dispose controllers saat widget dihapus
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  /// Fungsi untuk handle signup
-  Future<void> _handleSignup() async {
-    // Ambil value dari text field
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    return emailRegex.hasMatch(email);
+  }
+
+  void _goToNextStep() {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    // Validasi input tidak boleh kosong
+    // Validate email format
+    if (!_isValidEmail(email)) {
+      setState(() {
+        _isEmailValid = false;
+        _emailErrorText = 'Please enter a valid email address';
+      });
+      return;
+    } else {
+      setState(() {
+        _isEmailValid = true;
+        _emailErrorText = null;
+      });
+    }
+
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
       _showSnackBar('All fields are required', isError: true);
       return;
     }
-
-    // Validasi panjang password minimal 8 karakter
     if (password.length < 8) {
       _showSnackBar('Password must be at least 8 characters long',
           isError: true);
       return;
     }
 
-    // Set loading state
-    setState(() {
-      _isLoading = true;
-    });
+    final signupData = SignupData(name: name, email: email, password: password);
 
-    try {
-      // Panggil fungsi register dari AuthService
-      final result = await _authService.registerUser(name, email, password);
-
-      // Cek hasil register
-      if (result['success'] == true) {
-        // Register berhasil
-        final user = result['user'] as UserModel;
-        final message = result['message'] as String;
-
-        // Tampilkan snackbar sukses
-        _showSnackBar(message, isError: false);
-
-        // TODO: Navigate to home screen atau login screen
-        // Navigator.pushReplacementNamed(context, '/home');
-
-        // Debug: print user data
-        debugPrint(
-            'Registration successful! User: ${user.name}, Email: ${user.email}');
-      } else {
-        // Register gagal - tampilkan pesan error dari API
-        final message = result['message'] as String;
-        _showSnackBar(message, isError: true);
-      }
-    } catch (e) {
-      // Handle unexpected error
-      _showSnackBar('An unexpected error occurred', isError: true);
-    } finally {
-      // Set loading state ke false
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SignupRoleView(signUpData: signupData),
+      ),
+    );
   }
 
-  /// Fungsi untuk menampilkan SnackBar
   void _showSnackBar(String message, {required bool isError}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: isError ? Colors.red : Colors.green,
-        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -111,22 +89,19 @@ class _SignupViewState extends State<SignupView> {
       resizeToAvoidBottomInset: false,
       body: Container(
         decoration: BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage("assets/image/bg_auth.png"),
-                fit: BoxFit.cover)),
+          image: DecorationImage(
+            image: AssetImage("assets/image/bg_auth.png"),
+            fit: BoxFit.cover,
+          ),
+        ),
         child: SafeArea(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 48),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 48),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Image.asset(
-                  "assets/image/Logo.png",
-                  height: 50,
-                ),
-                SizedBox(height: 24),
-                // Header text
+                Image.asset("assets/image/Logo.png", height: 50),
+                const SizedBox(height: 24),
                 const Text(
                   'Create Your Workscout Account',
                   style: TextStyle(
@@ -148,157 +123,54 @@ class _SignupViewState extends State<SignupView> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 64),
-                // Email TextField
-                Text(
-                  "Full Name",
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontFamily: "Lato",
-                      fontWeight: FontWeight.w700,
-                      color: ColorsApp.black),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                Container(
-                  height: 50,
-                  child: TextFormField(
-                    controller: _nameController,
-                    keyboardType: TextInputType.name,
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontFamily: "Lato",
-                        fontWeight: FontWeight.w700,
-                        color: ColorsApp.Grey1),
-                    decoration: InputDecoration(
-                      floatingLabelBehavior: FloatingLabelBehavior.never,
-                      filled: true,
-                      fillColor: ColorsApp.white1,
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: ColorsApp.Grey3),
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: ColorsApp.Grey3),
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-                      disabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: ColorsApp.Grey3),
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: ColorsApp.Grey3),
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-                      labelStyle: TextStyle(
-                          fontSize: 13,
-                          fontFamily: "Lato",
-                          fontWeight: FontWeight.w700,
-                          color: ColorsApp.Grey2),
-                      hintStyle: TextStyle(
-                          fontSize: 13,
-                          fontFamily: "Lato",
-                          fontWeight: FontWeight.w700,
-                          color: ColorsApp.Grey2),
-                      labelText: 'Please enter your full name',
-                      hintText: 'Please enter your full name',
-                      border: OutlineInputBorder(),
-                    ),
-                    enabled: !_isLoading, // Disable saat loading
-                  ),
-                ),
+
+                // Name Field
+                _buildLabel("Full Name"),
+                _buildTextField(_nameController, "Please enter your full name",
+                    TextInputType.name),
+
                 const SizedBox(height: 18),
-                // Email TextField
-                Text(
-                  "Email",
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontFamily: "Lato",
-                      fontWeight: FontWeight.w700,
-                      color: ColorsApp.black),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                Container(
-                  height: 50,
-                  child: TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    style: TextStyle(
-                        fontSize: 13,
+
+                // Email Field
+                _buildLabel("Email"),
+                _buildTextField(_emailController,
+                    "Please enter your email address", TextInputType.emailAddress, isEmail: true),
+
+                // Email validation error message
+                if (_emailErrorText != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      _emailErrorText!,
+                      style: TextStyle(
+                        fontSize: 12,
                         fontFamily: "Lato",
-                        fontWeight: FontWeight.w700,
-                        color: ColorsApp.Grey1),
-                    decoration: InputDecoration(
-                      floatingLabelBehavior: FloatingLabelBehavior.never,
-                      filled: true,
-                      fillColor: ColorsApp.white1,
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: ColorsApp.Grey3),
-                        borderRadius: BorderRadius.circular(11),
+                        fontWeight: FontWeight.w400,
+                        color: Colors.red,
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: ColorsApp.Grey3),
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-                      disabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: ColorsApp.Grey3),
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: ColorsApp.Grey3),
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-                      labelStyle: TextStyle(
-                          fontSize: 13,
-                          fontFamily: "Lato",
-                          fontWeight: FontWeight.w700,
-                          color: ColorsApp.Grey2),
-                      hintStyle: TextStyle(
-                          fontSize: 13,
-                          fontFamily: "Lato",
-                          fontWeight: FontWeight.w700,
-                          color: ColorsApp.Grey2),
-                      labelText: 'Please enter your email address',
-                      hintText: 'Please enter your email address',
-                      border: OutlineInputBorder(),
                     ),
-                    enabled: !_isLoading, // Disable saat loading
                   ),
-                ),
+
                 const SizedBox(height: 18),
-                Text(
-                  "Password",
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontFamily: "Lato",
-                      fontWeight: FontWeight.w700,
-                      color: ColorsApp.black),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
+
+                // Password Field
+                _buildLabel("Password"),
                 Container(
                   height: 50,
                   child: TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     style: TextStyle(
-                        fontSize: 13,
-                        fontFamily: "Lato",
-                        fontWeight: FontWeight.w700,
-                        color: ColorsApp.Grey2),
+                      fontSize: 13,
+                      fontFamily: "Lato",
+                      fontWeight: FontWeight.w700,
+                      color: ColorsApp.Grey1,
+                    ),
                     decoration: InputDecoration(
                       floatingLabelBehavior: FloatingLabelBehavior.never,
-                      enabled: false,
                       filled: true,
                       fillColor: ColorsApp.white1,
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: ColorsApp.Grey3),
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-                      errorBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: ColorsApp.Grey3),
                         borderRadius: BorderRadius.circular(11),
                       ),
@@ -306,31 +178,20 @@ class _SignupViewState extends State<SignupView> {
                         borderSide: BorderSide(color: ColorsApp.Grey3),
                         borderRadius: BorderRadius.circular(11),
                       ),
-                      disabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: ColorsApp.Grey3),
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-                      labelStyle: TextStyle(
-                          fontSize: 13,
-                          fontFamily: "Lato",
-                          fontWeight: FontWeight.w700,
-                          color: ColorsApp.Grey2),
-                      hintStyle: TextStyle(
-                          fontSize: 13,
-                          fontFamily: "Lato",
-                          fontWeight: FontWeight.w700,
-                          color: ColorsApp.Grey2),
-                      labelText: 'Please enter your password',
                       hintText: 'Please enter your password',
-                      border: const OutlineInputBorder(),
-                      // Tombol untuk show/hide password
+                      hintStyle: TextStyle(
+                        fontSize: 13,
+                        fontFamily: "Lato",
+                        fontWeight: FontWeight.w700,
+                        color: ColorsApp.Grey2,
+                      ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          color: ColorsApp.primarydark,
-                          size: 17,
                           _obscurePassword
                               ? Icons.visibility_off
                               : Icons.visibility,
+                          color: ColorsApp.primarydark,
+                          size: 17,
                         ),
                         onPressed: () {
                           setState(() {
@@ -339,23 +200,23 @@ class _SignupViewState extends State<SignupView> {
                         },
                       ),
                     ),
-                    enabled: !_isLoading, // Disable saat loading
                   ),
                 ),
-                SizedBox(
-                  height: 8,
-                ),
+                const SizedBox(height: 8),
                 Text(
                   "Password must be at least 8 characters long",
                   style: TextStyle(
-                      fontSize: 12,
-                      fontFamily: "Lato",
-                      fontWeight: FontWeight.w700,
-                      color: ColorsApp.Grey2),
+                    fontSize: 12,
+                    fontFamily: "Lato",
+                    fontWeight: FontWeight.w700,
+                    color: ColorsApp.Grey2,
+                  ),
                 ),
                 const SizedBox(height: 20),
+
+                // NEXT BUTTON
                 ElevatedButton(
-                  onPressed: _isLoading ? null : _handleSignup,
+                  onPressed: _isLoading ? null : _goToNextStep,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ColorsApp.primarydark,
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -364,17 +225,13 @@ class _SignupViewState extends State<SignupView> {
                     ),
                   ),
                   child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
+                      ? const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         )
                       : const Text(
-                          'Sign Up',
+                          'Next',
                           style: TextStyle(
                             fontFamily: "Lato",
                             color: ColorsApp.Grey4,
@@ -383,38 +240,9 @@ class _SignupViewState extends State<SignupView> {
                           ),
                         ),
                 ),
-                SizedBox(
-                  height: 8,
-                ),
-                // BUATKAN BUTTON TRANSPARANT UNTUK LOGIN MELALUI GOOGLE
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      "assets/image/google.png",
-                      height: 30,
-                      width: 30,
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        // TODO: Implementasi Google Sign In
-                        debugPrint('Google Sign In clicked');
-                      },
-                      child: Text(
-                        'Login with Google',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontFamily: "Lato",
-                          fontWeight: FontWeight.w700,
-                          color: ColorsApp.Grey1,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 8,
-                ),
+                const SizedBox(height: 12),
+
+                // Link ke login
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -427,15 +255,14 @@ class _SignupViewState extends State<SignupView> {
                       ),
                     ),
                     TextButton(
-                      style: TextButton.styleFrom(padding: EdgeInsets.zero),
                       onPressed: () {
                         Navigator.pushReplacementNamed(context, '/login');
                       },
                       child: Text(
                         'Log in',
                         style: TextStyle(
-                          decorationColor: ColorsApp.primarydark,
                           decoration: TextDecoration.underline,
+                          decorationColor: ColorsApp.primarydark,
                           fontSize: 13,
                           fontFamily: "Lato",
                           fontWeight: FontWeight.w600,
@@ -444,9 +271,82 @@ class _SignupViewState extends State<SignupView> {
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 12,
+        fontFamily: "Lato",
+        fontWeight: FontWeight.w700,
+        color: ColorsApp.black,
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String hint,
+      TextInputType inputType, {bool isEmail = false}) {
+    return Container(
+      height: 50,
+      child: TextFormField(
+        controller: controller,
+        keyboardType: inputType,
+        onChanged: isEmail ? (value) {
+          // Validate email as user types
+          if (value.isNotEmpty) {
+            if (!_isValidEmail(value)) {
+              setState(() {
+                _isEmailValid = false;
+                _emailErrorText = 'Please enter a valid email address';
+              });
+            } else {
+              setState(() {
+                _isEmailValid = true;
+                _emailErrorText = null;
+              });
+            }
+          } else {
+            setState(() {
+              _emailErrorText = null;
+            });
+          }
+        } : null,
+        style: TextStyle(
+          fontSize: 13,
+          fontFamily: "Lato",
+          fontWeight: FontWeight.w700,
+          color: ColorsApp.Grey1,
+        ),
+        decoration: InputDecoration(
+          floatingLabelBehavior: FloatingLabelBehavior.never,
+          filled: true,
+          fillColor: isEmail && !_isEmailValid ? Colors.red.withOpacity(0.1) : ColorsApp.white1,
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: isEmail && !_isEmailValid ? Colors.red : ColorsApp.Grey3,
+            ),
+            borderRadius: BorderRadius.circular(11),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: isEmail && !_isEmailValid ? Colors.red : ColorsApp.Grey3,
+            ),
+            borderRadius: BorderRadius.circular(11),
+          ),
+          hintText: hint,
+          hintStyle: TextStyle(
+            fontSize: 13,
+            fontFamily: "Lato",
+            fontWeight: FontWeight.w700,
+            color: ColorsApp.Grey2,
           ),
         ),
       ),

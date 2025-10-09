@@ -86,7 +86,7 @@ class AuthService {
   /// Fungsi untuk register user baru
   /// Mengembalikan Map berisi success, message, token, dan user
   Future<Map<String, dynamic>> registerUser(
-      String name, String email, String password) async {
+      String name, String email, String password, String role) async {
     try {
       // Endpoint register
       final url = Uri.parse('$baseUrl/auth/register');
@@ -96,6 +96,7 @@ class AuthService {
         'name': name,
         'email': email,
         'password': password,
+        'role' : role,
       });
 
       // Kirim POST request ke API
