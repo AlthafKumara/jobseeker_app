@@ -50,6 +50,10 @@ class _CompleteSocietyProfilePageState
   Future<void> _submitProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() {
+      _isLoading = true;
+    });
+
     if (_selectedDate == null || _selectedGender == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -76,21 +80,28 @@ class _CompleteSocietyProfilePageState
       _isLoading = false;
     });
 
+    final snackBar = SnackBar(
+      content: Text(
+        result['message'] ??
+            (result['success']
+                ? 'Profile updated successfully'
+                : 'Failed to update profile'),
+        style: const TextStyle(color: Colors.white),
+      ),
+      backgroundColor: result['success'] ? Colors.green : Colors.red,
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.all(10),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    );
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
     if (result['success']) {
       Navigator.pushReplacementNamed(context, "/login");
-      setState(() {
-        _profile = result['profile'] as Society;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content:
-                Text(result['message'] ?? 'Profile completed successfully')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(result['message'] ?? 'Failed to complete profile')),
-      );
+      _profile = result['profile'] as Society;
     }
   }
 
@@ -477,14 +488,24 @@ class _CompleteSocietyProfilePageState
                       Container(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: _submitProfile,
-                          child: Text(
-                            'Submit',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontFamily: "Lato",
-                            ),
-                          ),
+                          onPressed: _isLoading ? null : _submitProfile,
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                              : const Text(
+                                  'Submit',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontFamily: "Lato",
+                                  ),
+                                ),
                           style: ElevatedButton.styleFrom(
                             foregroundColor: ColorsApp.white,
                             backgroundColor: ColorsApp.primarydark,

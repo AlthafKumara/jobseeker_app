@@ -222,10 +222,10 @@ class _LoginViewState extends State<LoginView> {
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     style: TextStyle(
-                          fontSize: 13,
-                          fontFamily: "Lato",
-                          fontWeight: FontWeight.w700,
-                          color: ColorsApp.Grey2),
+                        fontSize: 13,
+                        fontFamily: "Lato",
+                        fontWeight: FontWeight.w700,
+                        color: ColorsApp.Grey2),
                     decoration: InputDecoration(
                       floatingLabelBehavior: FloatingLabelBehavior.never,
                       enabled: false,
@@ -252,7 +252,7 @@ class _LoginViewState extends State<LoginView> {
                           fontFamily: "Lato",
                           fontWeight: FontWeight.w700,
                           color: ColorsApp.Grey2),
-                          hintStyle: TextStyle(
+                      hintStyle: TextStyle(
                           fontSize: 13,
                           fontFamily: "Lato",
                           fontWeight: FontWeight.w700,

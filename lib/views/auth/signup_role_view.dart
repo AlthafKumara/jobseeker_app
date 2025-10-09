@@ -218,40 +218,43 @@ class _SignupRoleViewState extends State<SignupRoleView> {
                   ],
                 ),
                 const SizedBox(height: 40),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _handleRegister,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorsApp.primarydark,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                Container(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _handleRegister,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorsApp.primarydark,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Next",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontFamily: "Lato",
-                                color: ColorsApp.white,
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Next",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontFamily: "Lato",
+                                  color: ColorsApp.white,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(
-                              Icons.arrow_forward,
-                              color: ColorsApp.white,
-                              size: 18,
-                            ),
-                          ],
-                        ),
+                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.arrow_forward,
+                                color: ColorsApp.white,
+                                size: 18,
+                              ),
+                            ],
+                          ),
+                  ),
                 ),
               ],
             ),
