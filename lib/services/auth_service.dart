@@ -112,22 +112,22 @@ class AuthService {
       final responseData = jsonDecode(response.body);
 
       // Cek apakah register berhasil
-      if (response.statusCode == 201 && responseData['success'] == true) {
-        // Simpan token ke SharedPreferences
-        final token = responseData['token'];
-        await _saveToken(token);
+          if (response.statusCode == 201 && responseData['success'] == true) {
+            // Simpan token ke SharedPreferences
+            final token = responseData['token'];
+            await _saveToken(token);
 
-        // Parse user data
-        final user = UserModel.fromJson(responseData['user']);
+            // Parse user data
+            final user = UserModel.fromJson(responseData['user']);
 
-        // Return response sukses
-        return {
-          'success': true,
-          'message': responseData['message'] ?? 'Registration successful',
-          'token': token,
-          'user': user,
-        };
-      } else {
+            // Return response sukses
+            return {
+              'success': true,
+              'message': responseData['message'] ?? 'Registration successful',
+              'token': token,
+              'user': user,
+            };
+          } else {
         // Return response gagal dari API
         return {
           'success': false,

@@ -40,7 +40,13 @@ class _SignupRoleViewState extends State<SignupRoleView> {
 
         _showSnackBar(message, isError: false);
 
-        Navigator.pushReplacementNamed(context, '/completesociety');
+        if (_selectedRole == 'HRD') {
+          Navigator.pushReplacementNamed(context, '/completehrd');
+          debugPrint("ini adalah token hrd: ${result['token']}");
+        } else if (_selectedRole == "Society") {
+          Navigator.pushReplacementNamed(context, '/completesociety');
+        }
+
         debugPrint(
             'Registration successful! User: ${user.name}, Role: ${user.role}');
       } else {
