@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 class Society {
   final String? id;
@@ -59,7 +60,7 @@ class Society {
       "date_of_birth":
           dateOfBirth != null ? dateOfBirth!.toIso8601String() : null,
       "gender": gender,
-      "profile_picture": profilePicture,
+      "profile_photo": profilePicture,
     };
   }
 

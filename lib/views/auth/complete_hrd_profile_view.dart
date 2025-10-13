@@ -6,7 +6,6 @@ import 'package:jobseeker_app/services/hrd_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jobseeker_app/models/hrd_model.dart';
 import 'package:jobseeker_app/widgets/colors.dart';
-
 import '../../widgets/customtextfield.dart';
 
 class CompleteHrdProfileView extends StatefulWidget {
@@ -18,16 +17,19 @@ class CompleteHrdProfileView extends StatefulWidget {
 
 class _CompleteHrdProfileViewState extends State<CompleteHrdProfileView> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  final HrdService _hrdService = HrdService();
 
-  File? _selectedImage;
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+
   bool _isLoading = false;
-
+  File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
+  HrdModel? _profile;
 
+  /// ✅ Pilih image dari gallery
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
@@ -37,198 +39,201 @@ class _CompleteHrdProfileViewState extends State<CompleteHrdProfileView> {
     }
   }
 
-  Future<String?> _getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString("token");
-  }
-
+  /// ✅ Submit profile HRD ke backend (dengan default image jika user tidak upload)
   Future<void> _submitProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
-    String base64Logo;
-    if (_selectedImage != null) {
-      final bytes = await _selectedImage!.readAsBytes();
-      base64Logo = base64Encode(bytes);
-    } else {
-      final bytes =
-          await DefaultAssetBundle.of(context).load('assets/image/house.png');
-      base64Logo = base64Encode(bytes.buffer.asUint8List());
-    }
+    try {
+      // Gunakan image dari user atau default dari assets
+      String base64Logo;
+      if (_selectedImage != null) {
+        final bytes = await _selectedImage!.readAsBytes();
+        base64Logo = base64Encode(bytes);
+      } else {
+        final byteData =
+            await DefaultAssetBundle.of(context).load('assets/image/house.png');
+        base64Logo = base64Encode(byteData.buffer.asUint8List());
+      }
 
-    final token = await _getToken();
-    if (token == null) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Authentication token not found!")),
+      final result = await _hrdService.completeHrdProfile(
+        name: _nameController.text.trim(),
+        address: _addressController.text.trim(),
+        phone: _phoneController.text.trim(),
+        description: _descriptionController.text.trim(),
+        defaultAssetPath: "assets/image/house.png",
       );
-      return;
-    }
 
-    final hrd = HrdModel(
-      name: _nameController.text.trim(),
-      address: _addressController.text.trim(),
-      phone: _phoneController.text.trim(),
-      description: _descriptionController.text.trim(),
-      logo: base64Logo,
-    );
+      print("✅ Response dari server: $result");
 
-    final result = await HrdService().completeHrdProfile(
-      name: _nameController.text.trim(),
-      address: _addressController.text.trim(),
-      phone: _phoneController.text.trim(),
-      description: _descriptionController.text.trim(),
-      logo: base64Logo,
-    );
+      setState(() => _isLoading = false);
 
-    final snackBar = SnackBar(
-      content: Text(
-        result['message'] ??
-            (result['success']
-                ? 'Profile updated successfully'
-                : 'Failed to update profile'),
-        style: const TextStyle(color: Colors.white),
-      ),
-      backgroundColor: result['success'] ? Colors.green : Colors.red,
-      behavior: SnackBarBehavior.floating,
-      margin: const EdgeInsets.all(10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-    );
+      final snackBar = SnackBar(
+        content: Text(
+          result['message'] ??
+              (result['success']
+                  ? 'Profile updated successfully'
+                  : 'Failed to update profile'),
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: result['success'] ? Colors.green : Colors.red,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      );
 
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
-    if (result['success']) {
-      Navigator.pushReplacementNamed(context, "/login");
-    } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    }
 
-    setState(() => _isLoading = false);
+      if (result['success']) {
+        _profile = result['profile'] as HrdModel?;
+        Navigator.pushReplacementNamed(context, "/login");
+      }
+    } catch (e, stackTrace) {
+      print("❌ Error submit HRD profile: $e");
+      print("📄 StackTrace: $stackTrace");
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(result["message"]),
-        backgroundColor: result["success"] ? Colors.green : Colors.red,
-      ),
-    );
+      setState(() => _isLoading = false);
 
-    if (result["success"]) {
-      Navigator.pushReplacementNamed(context, "/home");
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Error: ${e.toString()}',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(10),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final imageProvider = _selectedImage != null
-        ? FileImage(_selectedImage!)
-        : const AssetImage("assets/image/house.png") as ImageProvider;
+    final imageProvider =
+        const AssetImage("assets/image/house.png") as ImageProvider;
 
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              // 🖼️ Avatar
-              Center(
-                child: Stack(
-                  alignment: Alignment.bottomRight,
+      resizeToAvoidBottomInset: false,
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/image/bg_auth.png"),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 48),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundColor: ColorsApp.white1,
-                      backgroundImage: imageProvider,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 4,
-                      child: GestureDetector(
-                        onTap: _isLoading ? null : _pickImage,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: ColorsApp.primarydark,
-                            shape: BoxShape.circle,
-                          ),
-                          padding: const EdgeInsets.all(8),
-                          child:
-                              const Icon(Icons.camera_alt, color: Colors.white),
-                        ),
+                    Image.asset("assets/image/Logo.png", height: 30),
+                    const SizedBox(width: 5),
+                    const Text(
+                      "Workscout",
+                      style: TextStyle(
+                        fontFamily: "Lato",
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 24),
-
-              CustomTextField(
-                controller: _nameController,
-                label: "Institution Name",
-                hintText: "Enter your institution name",
-                enabled: !_isLoading,
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: _addressController,
-                label: "Address",
-                hintText: "Enter your address",
-                enabled: !_isLoading,
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: _phoneController,
-                label: "Phone Number",
-                hintText: "Enter your phone number",
-                keyboardType: TextInputType.phone,
-                enabled: !_isLoading,
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: _descriptionController,
-                label: "Description",
-                hintText: "Brief description about your company",
-                maxLines: 3,
-                enabled: !_isLoading,
-              ),
-              const SizedBox(height: 30),
-
-              // 🔘 Submit Button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorsApp.primarydark,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                const SizedBox(height: 32),
+                const Text(
+                  'Company Information',
+                  style: TextStyle(
+                    fontFamily: "Lato",
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
                   ),
-                  onPressed: _isLoading ? null : _submitProfile,
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          "Submit",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontFamily: "Lato",
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 28),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      CustomTextField(
+                        controller: _nameController,
+                        label: "Company Name",
+                        hintText: "Enter your company name",
+                        enabled: !_isLoading,
+                        validator: (v) =>
+                            v!.isEmpty ? "Please enter institution name" : null,
+                      ),
+                      const SizedBox(height: 12),
+                      CustomTextField(
+                        controller: _addressController,
+                        label: "Address",
+                        hintText: "Enter your address",
+                        enabled: !_isLoading,
+                        validator: (v) =>
+                            v!.isEmpty ? "Please enter address" : null,
+                      ),
+                      const SizedBox(height: 12),
+                      CustomTextField(
+                        controller: _phoneController,
+                        label: "Phone",
+                        hintText: "Enter your phone number",
+                        keyboardType: TextInputType.phone,
+                        enabled: !_isLoading,
+                        validator: (v) =>
+                            v!.isEmpty ? "Please enter phone number" : null,
+                      ),
+                      const SizedBox(height: 12),
+                      CustomTextField(
+                        controller: _descriptionController,
+                        label: "Description",
+                        hintText: "Brief description about your company",
+                        maxLines: 3,
+                        enabled: !_isLoading,
+                        validator: (v) =>
+                            v!.isEmpty ? "Please enter description" : null,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _submitProfile,
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: ColorsApp.primarydark,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            'Submit',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontFamily: "Lato",
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

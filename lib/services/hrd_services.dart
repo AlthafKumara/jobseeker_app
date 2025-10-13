@@ -1,25 +1,24 @@
 import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/hrd_model.dart';
 
 class HrdService {
-  static const String baseUrl = 'https://jobseeker-database.vercel.app/api';
+  static const String baseUrl =
+      'https://jobseeker-database.vercel.app/api/auth';
 
-  /// ✅ Fungsi untuk melengkapi profil HRD
-  /// Mengembalikan Map dengan status success, message, dan data profile
+  /// ✅ Lengkapi profil HRD (upload logo ke Vercel Blob via backend)
   Future<Map<String, dynamic>> completeHrdProfile({
     required String name,
     required String address,
     required String phone,
     required String description,
-    required String logo, // base64 string
+    required String defaultAssetPath, // contoh: 'assets/image/company.png'
   }) async {
     try {
-      // Ambil token dari SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
-      print("ini adalah token hrd: $token");
 
       if (token == null) {
         return {
@@ -28,35 +27,46 @@ class HrdService {
         };
       }
 
-      // Endpoint API
-      final url = Uri.parse('$baseUrl/auth/complete-hrd-profile');
+      // ✅ Ambil file default logo dari assets
+      final byteData = await rootBundle.load(defaultAssetPath);
+      final bytes = byteData.buffer.asUint8List();
 
-      // Body request
-      final body = jsonEncode({
-        'name': name,
-        'address': address,
-        'phone': phone,
-        'description': description,
-        'logo': logo,
-      });
+      // ✅ Konversi ke base64 (akan diterima backend dan diunggah ke Vercel Blob)
+      final base64Logo = base64Encode(bytes);
 
-      // Kirim POST request
+      final uri = Uri.parse('$baseUrl/complete-hrd-profile');
       final response = await http.post(
-        url,
+        uri,
         headers: {
           'Content-Type': 'application/json',
-          'x-auth-token': token, // ✅ kirim token di header
+          'x-auth-token': token,
         },
-        body: body,
+        body: jsonEncode({
+          'name': name,
+          'address': address,
+          'phone': phone,
+          'description': description,
+          'logo': base64Logo, // backend handle upload ke blob
+        }),
       );
 
-      // Decode response dari server
-      final responseData = jsonDecode(response.body);
+      print('📥 Status Code: ${response.statusCode}');
+      print('📥 Response Body Raw: ${response.body}');
+
+      Map<String, dynamic> responseData = {};
+      try {
+        responseData = jsonDecode(response.body);
+      } catch (e) {
+        print('❌ Gagal decode JSON: $e');
+        print('📄 Response bukan JSON valid: ${response.body}');
+        return {
+          'success': false,
+          'message': 'Invalid response format from server.',
+        };
+      }
 
       if (response.statusCode == 200 && responseData['success'] == true) {
-        // Parse data ke model HRD
         final profile = HrdModel.fromJson(responseData['profile']);
-
         return {
           'success': true,
           'message': responseData['message'] ?? 'Profile updated successfully',
@@ -67,13 +77,13 @@ class HrdService {
           'success': false,
           'message': responseData['error'] ??
               responseData['message'] ??
-              'Failed to complete HRD profile',
+              'Failed to complete profile',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'message': 'An error occurred: ${e.toString()}',
+        'message': 'Error: ${e.toString()}',
       };
     }
   }

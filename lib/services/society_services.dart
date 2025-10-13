@@ -1,63 +1,76 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/society_model.dart';
 
 class SocietyService {
-  static const String baseUrl = 'https://jobseeker-database.vercel.app/api';
+  static const String baseUrl =
+      'https://jobseeker-database.vercel.app/api/auth';
 
-  /// ✅ Fungsi untuk melengkapi profil society
-  /// Mengembalikan Map dengan status success, message, dan data profile
+  /// ✅ Lengkapi profil society (upload image ke Vercel Blob via backend)
   Future<Map<String, dynamic>> completeSocietyProfile({
     required String name,
     required String address,
     required String phone,
     required String dateOfBirth,
     required String gender,
-    required String profilePicture, // bisa kirim base64 string
+    required String defaultAssetPath, // ex: 'assets/image/user.png'
   }) async {
     try {
-      // Ambil token dari SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
       if (token == null) {
         return {
           'success': false,
-          'message': 'No token found. Please login first.',
+          'message': 'No token found. Please login first.'
         };
       }
 
-      // Endpoint API
-      final url = Uri.parse('$baseUrl/auth/complete-society-profile');
+      // ✅ Ambil file default dari assets
+      final byteData = await rootBundle.load(defaultAssetPath);
+      final bytes = byteData.buffer.asUint8List();
 
-      // Body request
-      final body = jsonEncode({
-        'name': name,
-        'address': address,
-        'phone': phone,
-        'date_of_birth': dateOfBirth,
-        'gender': gender,
-        'profile_picture': profilePicture,
-      });
+      // ✅ Konversi ke base64 (akan diterima backend dan diunggah ke Vercel Blob)
+      final base64Image = base64Encode(bytes);
 
-      // Kirim POST request
+      final uri = Uri.parse('$baseUrl/complete-society-profile');
       final response = await http.post(
-        url,
+        uri,
         headers: {
           'Content-Type': 'application/json',
-          'x-auth-token': token, // kirim token di header
+          'x-auth-token': token,
         },
-        body: body,
+        body: jsonEncode({
+          'name': name,
+          'address': address,
+          'phone': phone,
+          'date_of_birth': dateOfBirth,
+          'gender': gender,
+          'profile_photo': base64Image, // backend handle upload ke blob
+        }),
       );
 
-      // Parse response dari server
-      final responseData = jsonDecode(response.body);
+      print('📥 Status Code: ${response.statusCode}');
+      print('📥 Response Body Raw: ${response.body}');
+
+      Map<String, dynamic> responseData = {};
+      try {
+        responseData = jsonDecode(response.body);
+      } catch (e) {
+        print('❌ Gagal decode JSON: $e');
+        print('📄 Response bukan JSON valid: ${response.body}');
+        return {
+          'success': false,
+          'message': 'Invalid response format from server.',
+        };
+      }
 
       if (response.statusCode == 200 && responseData['success'] == true) {
-        // Parse data ke model
         final profile = Society.fromJson(responseData['profile']);
-
         return {
           'success': true,
           'message': responseData['message'] ?? 'Profile updated successfully',
@@ -72,11 +85,7 @@ class SocietyService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'An error occurred: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Error: ${e.toString()}'};
     }
   }
 }
-  
