@@ -65,6 +65,12 @@ class _LoginViewState extends State<LoginView> {
         final user = result['user'] as UserModel;
         final message = result['message'] as String;
 
+        if (user.role == 'HRD') {
+          Navigator.pushReplacementNamed(context, '/hrd_dashboard');
+        } else if (user.role == 'Society') {
+          Navigator.pushReplacementNamed(context, '/society_dashboard');
+        }
+
         // Tampilkan snackbar sukses
         _showSnackBar("Login berhasil", isError: false);
 
