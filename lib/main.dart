@@ -7,6 +7,10 @@ import 'package:jobseeker_app/views/auth/signup_view.dart';
 import 'package:jobseeker_app/views/auth/splash_screen.dart';
 import 'package:jobseeker_app/views/auth/login_view.dart';
 import 'package:jobseeker_app/views/hrd_view/hrd_dashboard.dart';
+import 'package:jobseeker_app/views/hrd_view/hrd_profile.dart';
+import 'package:jobseeker_app/views/hrd_view/hrd_search.dart';
+import 'package:jobseeker_app/views/hrd_view/hrd_update_profile.dart';
+import 'package:jobseeker_app/views/hrd_view/hrd_vacancy.dart';
 import 'package:jobseeker_app/views/society_view/society_dashboard.dart';
 
 void main() {
@@ -31,9 +35,15 @@ class MyApp extends StatelessWidget {
         '/completesociety': (context) => CompleteSocietyProfilePage(),
         '/completehrd': (context) => CompleteHrdProfileView(),
 
-        // DASHBOARD
-        '/society_dashboard': (context) => SocietyDashboard(),
+        // HRD PAGE
         '/hrd_dashboard': (context) => HrdDashboard(),
+        '/hrd_profile': (context) => HrdProfile(),
+        '/hrd_vacancy': (context) => HrdVacancy(),
+        '/hrd_search': (context) => HrdSearch(),
+        '/hrd_update_profile': (context) => UpdateHrdProfileView(),
+
+        // SOCIETY PAGE
+        '/society_dashboard': (context) => SocietyDashboard(),
       },
     );
   }

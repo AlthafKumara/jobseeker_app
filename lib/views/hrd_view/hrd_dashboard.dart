@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobseeker_app/widgets/hrd_bottom_nav.dart';
 
 class HrdDashboard extends StatefulWidget {
   const HrdDashboard({super.key});
@@ -14,6 +15,7 @@ class _HrdDashboardState extends State<HrdDashboard> {
       body: Center(
         child: Text("HRD Dashboard"),
       ),
+      bottomNavigationBar: HrdBottomNav(0),
     );
   }
 }
