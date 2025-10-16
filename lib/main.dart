@@ -6,6 +6,7 @@ import 'package:jobseeker_app/views/auth/signup_role_view.dart';
 import 'package:jobseeker_app/views/auth/signup_view.dart';
 import 'package:jobseeker_app/views/auth/splash_screen.dart';
 import 'package:jobseeker_app/views/auth/login_view.dart';
+import 'package:jobseeker_app/views/hrd_view/hrd_create_vacancy_view.dart';
 import 'package:jobseeker_app/views/hrd_view/hrd_dashboard.dart';
 import 'package:jobseeker_app/views/hrd_view/hrd_profile.dart';
 import 'package:jobseeker_app/views/hrd_view/hrd_search.dart';
@@ -41,6 +42,7 @@ class MyApp extends StatelessWidget {
         '/hrd_vacancy': (context) => HrdVacancy(),
         '/hrd_search': (context) => HrdSearch(),
         '/hrd_update_profile': (context) => UpdateHrdProfileView(),
+        '/hrd_create_vacancy': (context) => HrdCreateVacancyView(),
 
         // SOCIETY PAGE
         '/society_dashboard': (context) => SocietyDashboard(),

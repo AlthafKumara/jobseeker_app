@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
@@ -77,12 +78,6 @@ class AuthService {
     return prefs.getString('token');
   }
 
-  /// Fungsi untuk logout (hapus token)
-  Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
-  }
-
   /// Fungsi untuk register user baru
   /// Mengembalikan Map berisi success, message, token, dan user
   Future<Map<String, dynamic>> registerUser(
@@ -140,6 +135,39 @@ class AuthService {
         'success': false,
         'message': 'An error occurred: ${e.toString()}',
       };
+    }
+  }
+
+  // Fungsi Logout
+  Future<bool> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      return false;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/logout'),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Hapus token lokal
+        await prefs.remove('token');
+        await prefs.remove('user');
+        return true;
+      } else {
+        print('Logout failed: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Logout error: $e');
+      return false;
     }
   }
 }
