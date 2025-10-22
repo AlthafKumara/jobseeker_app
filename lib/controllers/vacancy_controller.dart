@@ -25,12 +25,20 @@ class VacancyController {
     }
   }
 
-  // === FETCH COMPANY VACANCIES (HRD) ===
   Future<void> fetchCompanyVacancies() async {
     isLoading = true;
     errorMessage = null;
     try {
       companyVacancies = await _service.getCompanyPositions();
+
+      final now = DateTime.now().toUtc();
+
+      companyVacancies = companyVacancies.map((vacancy) {
+        if (now.isAfter(vacancy.submissionEndDate)) {
+          return vacancy.copyWith(status: 'Expired');
+        }
+        return vacancy;
+      }).toList();
     } catch (e) {
       errorMessage = e.toString();
     } finally {

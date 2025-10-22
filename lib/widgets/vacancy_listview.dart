@@ -55,7 +55,7 @@ class VacancyListView extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Image.network(hrd!.logo, width: 35, height: 35),
+              Image.network(hrd!.logo, width: 40, height: 40),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -80,7 +80,7 @@ class VacancyListView extends StatelessWidget {
                 ],
               ),
               Text(
-                vacancy.status == 'Active' ? 'Active' : 'Inactive',
+                vacancy.status == 'Active' ? 'Active' : 'Expired',
                 style: TextStyle(
                   fontFamily: "Lato",
                   fontSize: 12,

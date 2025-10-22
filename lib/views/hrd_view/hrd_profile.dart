@@ -18,6 +18,7 @@ class HrdProfile extends StatefulWidget {
 
 class _HrdProfileState extends State<HrdProfile> {
   List<VacancyModel> _vacancies = [];
+  List<dynamic> _applicants = [];
   bool _isLoadingVacancies = true;
 
   final HrdController _controller = HrdController();
@@ -283,7 +284,7 @@ class _HrdProfileState extends State<HrdProfile> {
                             ),
                           ),
                           Text(
-                            "3 Applicant",
+                            "${_applicants.length} People",
                             style: TextStyle(
                               color: ColorsApp.black,
                               fontFamily: "Lato",

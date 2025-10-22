@@ -48,4 +48,32 @@ class VacancyModel {
       status: json['status'] ?? 'Active', // default Active
     );
   }
+
+  VacancyModel copyWith({
+    String? id,
+    String? positionName,
+    int? capacity,
+    String? description,
+    DateTime? submissionStartDate,
+    DateTime? submissionEndDate,
+    String? companyId,
+    String? companyName,
+    String? companyAddress,
+    String? companyLogo,
+    String? status,
+  }) {
+    return VacancyModel(
+      id: id ?? this.id,
+      positionName: positionName ?? this.positionName,
+      capacity: capacity ?? this.capacity,
+      description: description ?? this.description,
+      submissionStartDate: submissionStartDate ?? this.submissionStartDate,
+      submissionEndDate: submissionEndDate ?? this.submissionEndDate,
+      companyId: companyId ?? this.companyId,
+      companyName: companyName ?? this.companyName,
+      companyAddress: companyAddress ?? this.companyAddress,
+      companyLogo: companyLogo ?? this.companyLogo,
+      status: status ?? this.status,
+    );
+  }
 }

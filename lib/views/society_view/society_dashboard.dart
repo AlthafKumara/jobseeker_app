@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobseeker_app/widgets/society_bottom_nav.dart';
 
 class SocietyDashboard extends StatefulWidget {
   const SocietyDashboard({super.key});
@@ -14,6 +15,7 @@ class _SocietyDashboardState extends State<SocietyDashboard> {
       body: Center(
         child: Text("Society Dashboard"),
       ),
+      bottomNavigationBar: SocietyBottomNav(0),
     );
   }
 }
