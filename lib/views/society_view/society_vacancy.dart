@@ -119,25 +119,34 @@ class _SocietyVacancyState extends State<SocietyVacancy> {
                   ],
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
 
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: List.generate(statuses.length, (index) {
-                      return statusButton(
-                        statuses[index],
-                        selectedStatus == index,
-                        () {
-                          setState(() {
-                            selectedStatus = index;
-                          });
-                        },
-                      );
-                    }),
-                  ),
+                Container(
+                  height: MediaQuery.of(context).size.height * 0.8,
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 40),
+                  child: _appliedActive
+                      ? SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: List.generate(statuses.length, (index) {
+                              return statusButton(
+                                statuses[index],
+                                selectedStatus == index,
+                                () {
+                                  setState(() {
+                                    selectedStatus = index;
+                                  });
+                                },
+                              );
+                            }),
+                          ),
+                        )
+                      : _chatActive
+                          ? Center(child: Text("Chat"))
+                          : Center(child: Text("No Data")),
                 ),
 
                 const SizedBox(height: 28),
