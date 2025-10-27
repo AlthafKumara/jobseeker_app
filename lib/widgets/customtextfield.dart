@@ -3,7 +3,7 @@ import 'package:jobseeker_app/widgets/colors.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
-  final String label;
+  final String? label;
   final String hintText;
   final TextInputType keyboardType;
   final bool obscureText;
@@ -21,7 +21,7 @@ class CustomTextField extends StatelessWidget {
   const CustomTextField({
     Key? key,
     required this.controller,
-    required this.label,
+    this.label,
     required this.hintText,
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
@@ -46,7 +46,7 @@ class CustomTextField extends StatelessWidget {
       children: [
         // Label
         Text(
-          label,
+          label!,
           style: TextStyle(
             fontSize: 12,
             fontFamily: "Lato",

@@ -5,7 +5,7 @@ class Society {
   final String phone;
   final String dateOfBirth;
   final String gender;
-  final String profilePhoto;
+  final String? profilePhoto;
   final bool isProfileComplete;
 
   Society({
@@ -15,20 +15,21 @@ class Society {
     required this.phone,
     required this.dateOfBirth,
     required this.gender,
-    required this.profilePhoto,
+    this.profilePhoto,
     required this.isProfileComplete,
   });
 
   factory Society.fromJson(Map<String, dynamic> json) {
     return Society(
-      id: json['_id'] ?? '',
+      id: json['_id'] ?? json['id'] ?? '',
       name: json['name'] ?? '',
       address: json['address'] ?? '',
       phone: json['phone'] ?? '',
-      dateOfBirth: json['date_of_birth'] ?? '',
+      dateOfBirth: json['date_of_birth'] ?? json['dateOfBirth'] ?? '',
       gender: json['gender'] ?? '',
-      profilePhoto: json['profile_photo'] ?? '',
-      isProfileComplete: json['isProfileComplete'] ?? false,
+      profilePhoto: json['profile_photo'] ?? json['profilePhoto'],
+      isProfileComplete:
+          json['isProfileComplete'] ?? json['profile_complete'] ?? false,
     );
   }
 
