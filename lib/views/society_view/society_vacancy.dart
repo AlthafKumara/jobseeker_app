@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobseeker_app/widgets/applied_details_listview.dart';
 import 'package:jobseeker_app/widgets/colors.dart';
 import 'package:jobseeker_app/widgets/society_bottom_nav.dart';
 
@@ -10,16 +11,14 @@ class SocietyVacancy extends StatefulWidget {
 }
 
 class _SocietyVacancyState extends State<SocietyVacancy> {
-  int selectedStatus = 0;
-
   bool _appliedActive = true;
   bool _chatActive = false;
+  int selectedStatus = 0;
 
-  // List status (biar tidak nulis berulang)
   final List<String> statuses = [
     "All",
     "Submitted",
-    "Interview",
+    "Rejected",
     "Accepted",
   ];
 
@@ -119,37 +118,60 @@ class _SocietyVacancyState extends State<SocietyVacancy> {
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 28),
 
+                // --- BAGIAN UTAMA SEPERTI DI HRD ---
                 Container(
                   height: MediaQuery.of(context).size.height * 0.8,
                   width: double.infinity,
                   margin: const EdgeInsets.only(bottom: 40),
                   child: _appliedActive
-                      ? SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: List.generate(statuses.length, (index) {
-                              return statusButton(
-                                statuses[index],
-                                selectedStatus == index,
-                                () {
-                                  setState(() {
-                                    selectedStatus = index;
-                                  });
-                                },
-                              );
-                            }),
-                          ),
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children:
+                                    List.generate(statuses.length, (index) {
+                                  return statusButton(
+                                    statuses[index],
+                                    selectedStatus == index,
+                                    () {
+                                      setState(() {
+                                        selectedStatus = index;
+                                      });
+                                    },
+                                  );
+                                }),
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+
+                            // ✅ Sama seperti HRD, tapi pakai key unik
+                            if (selectedStatus == 0)
+                              const AppliedDetailsListview(
+                                  key: ValueKey("All")),
+                            if (selectedStatus == 1)
+                              const AppliedDetailsListview(
+                                  key: ValueKey("Submitted"),
+                                  status: "Submitted"),
+                            if (selectedStatus == 2)
+                              const AppliedDetailsListview(
+                                  key: ValueKey("Rejected"),
+                                  status: "Rejected"),
+                            if (selectedStatus == 3)
+                              const AppliedDetailsListview(
+                                  key: ValueKey("Accepted"),
+                                  status: "Accepted"),
+                          ],
                         )
                       : _chatActive
-                          ? Center(child: Text("Chat"))
-                          : Center(child: Text("No Data")),
+                          ? const Center(child: Text("Chat"))
+                          : const Center(child: Text("No Data")),
                 ),
-
-                const SizedBox(height: 28),
               ],
             ),
           ),

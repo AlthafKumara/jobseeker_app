@@ -164,7 +164,7 @@ class HrdService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final profile = HrdModel.fromJson(data['profile'] ?? data);
+        final profile = HrdModel.fromJson(data['data']);
         return {
           'success': true,
           'profile': profile,
@@ -231,7 +231,7 @@ class HrdService {
       }
 
       if (response.statusCode == 200 && responseData['success'] == true) {
-        final profile = HrdModel.fromJson(responseData['profile']);
+        final profile = HrdModel.fromJson(responseData['data']);
         return {
           'success': true,
           'message':

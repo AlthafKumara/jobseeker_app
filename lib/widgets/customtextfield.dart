@@ -44,17 +44,18 @@ class CustomTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Label
-        Text(
-          label!,
-          style: TextStyle(
-            fontSize: 12,
-            fontFamily: "Lato",
-            fontWeight: FontWeight.w700,
-            color: isDisabled ? ColorsApp.Grey2 : ColorsApp.black,
+        if (label != null) ...[
+          Text(
+            label!,
+            style: TextStyle(
+              fontSize: 12,
+              fontFamily: "Lato",
+              fontWeight: FontWeight.w700,
+              color: isDisabled ? ColorsApp.Grey2 : ColorsApp.black,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
+          const SizedBox(height: 8),
+        ],
 
         // Text Field
         Opacity(
@@ -133,7 +134,12 @@ class CustomTextField extends StatelessWidget {
                   minWidth: 24,
                   minHeight: 24,
                 ),
-                suffixIcon: suffixIcon,
+                suffixIcon: suffixIcon != null
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 8, right: 16),
+                        child: suffixIcon,
+                      )
+                    : null,
                 suffixIconConstraints: const BoxConstraints(
                   minWidth: 24,
                   minHeight: 24,

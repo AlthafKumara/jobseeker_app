@@ -38,9 +38,9 @@ class _HrdBottomNavState extends State<HrdBottomNav> {
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          activeIcon: Image.asset('assets/navbar/Search_on.png'),
-          icon: Image.asset('assets/navbar/Search.png'),
-          label: 'Search',
+          activeIcon: Image.asset('assets/navbar/Work_on.png'),
+          icon: Image.asset('assets/navbar/Work.png'),
+          label: 'Company',
         ),
         BottomNavigationBarItem(
           activeIcon: Image.asset('assets/navbar/Document_on.png'),

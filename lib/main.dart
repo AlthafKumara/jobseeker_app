@@ -53,6 +53,6 @@ class MyApp extends StatelessWidget {
         '/society_vacancy': (context) => SocietyVacancy(),
         '/society_profile': (context) => SocietyProfile(),
       },
-    );
+    );  
   }
 }

@@ -3,6 +3,8 @@ import 'package:jobseeker_app/controllers/hrd_controller.dart';
 import 'package:jobseeker_app/controllers/vacancy_controller.dart';
 import 'package:jobseeker_app/models/hrd_model.dart';
 import 'package:jobseeker_app/models/vacancy_model.dart';
+import 'package:jobseeker_app/widgets/applied_details_listview.dart';
+import 'package:jobseeker_app/widgets/applied_list_view.dart';
 import 'package:jobseeker_app/widgets/colors.dart';
 import 'package:jobseeker_app/widgets/hrd_bottom_nav.dart';
 import 'package:jobseeker_app/widgets/vacancy_listview.dart';
@@ -21,16 +23,23 @@ class _HrdVacancyState extends State<HrdVacancy> {
   final HrdController _controller = HrdController();
 
   bool _vacanciesActive = true;
-  bool _chatActive = false;
+  bool _appliedActive = false;
   bool _isLoading = true;
   bool _isLoadingVacancies = true;
   String _errorMessage = '';
   String? logoUrl;
+  int selectedStatus = 0;
+
+  final List<String> statuses = [
+    "All",
+    "Expired",
+    "Active",
+  ];
 
   Future<void> _loadLogo() async {
     final url = await _controller.loadInitialLogo();
     setState(() => logoUrl = url);
-  } 
+  }
 
   // LOAD PROFILE
   Future<void> _loadProfile() async {
@@ -73,6 +82,17 @@ class _HrdVacancyState extends State<HrdVacancy> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: _vacanciesActive
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.popAndPushNamed(context, "/hrd_create_vacancy");
+              },
+              child: Icon(Icons.add),
+              backgroundColor: ColorsApp.primarydark,
+              foregroundColor: ColorsApp.white,
+            )
+          : null,
       backgroundColor: ColorsApp.white,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -105,7 +125,7 @@ class _HrdVacancyState extends State<HrdVacancy> {
                               onPressed: () {
                                 setState(() {
                                   _vacanciesActive = true;
-                                  _chatActive = false;
+                                  _appliedActive = false;
                                 });
                               },
                               child: Text(
@@ -126,7 +146,7 @@ class _HrdVacancyState extends State<HrdVacancy> {
                           decoration: BoxDecoration(
                               border: Border(
                                   bottom: BorderSide(
-                                      color: _chatActive
+                                      color: _appliedActive
                                           ? ColorsApp.primarydark
                                           : ColorsApp.Grey2,
                                       width: 2))),
@@ -140,13 +160,13 @@ class _HrdVacancyState extends State<HrdVacancy> {
                               onPressed: () {
                                 setState(() {
                                   _vacanciesActive = false;
-                                  _chatActive = true;
+                                  _appliedActive = true;
                                 });
                               },
                               child: Text(
-                                "Chat",
+                                "Applied",
                                 style: TextStyle(
-                                  color: _chatActive
+                                  color: _appliedActive
                                       ? ColorsApp.primarydark
                                       : ColorsApp.Grey2,
                                   fontFamily: "Lato",
@@ -165,17 +185,90 @@ class _HrdVacancyState extends State<HrdVacancy> {
                   width: double.infinity,
                   margin: const EdgeInsets.only(bottom: 40),
                   child: _vacanciesActive
-                      ? VacancyListView(vacancies: _vacancies, hrd: _profile)
-                      : _chatActive
-                          ? Center(child: Text("Chat"))
-                          : Center(child: Text("No Data")),
-                )
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Wrap(
+                                runAlignment: WrapAlignment.spaceBetween,
+                                spacing: 8,
+                                runSpacing: 8,
+                                children:
+                                    List.generate(statuses.length, (index) {
+                                  return statusButton(
+                                    statuses[index],
+                                    selectedStatus == index,
+                                    () {
+                                      setState(() {
+                                        selectedStatus = index;
+                                      });
+                                    },
+                                  );
+                                }),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 32,
+                            ),
+                            if (selectedStatus == 0)
+                              VacancyListView(
+                                  vacancies: _vacancies, hrd: _profile),
+                            if (selectedStatus == 1)
+                              VacancyListView(
+                                vacancies: _vacancies,
+                                hrd: _profile,
+                                status: "Expired",
+                              ),
+                            if (selectedStatus == 2)
+                              VacancyListView(
+                                vacancies: _vacancies,
+                                hrd: _profile,
+                                status: "Active",
+                              ),
+                          ],
+                        )
+                      : _appliedActive
+                          ? Container(
+                              height: MediaQuery.of(context).size.height * 0.8,
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: 40),
+                              child: AppliedListView(),
+                            )
+                          : Center(child: Text("Error")),
+                ),
               ],
             ),
           ),
         ),
       ),
       bottomNavigationBar: HrdBottomNav(2),
+    );
+  }
+
+  Widget statusButton(String text, bool isSelected, VoidCallback onTap) {
+    return OutlinedButton(
+      onPressed: onTap,
+      style: OutlinedButton.styleFrom(
+        backgroundColor: isSelected ? ColorsApp.primarydark : ColorsApp.white,
+        foregroundColor: isSelected ? ColorsApp.white : ColorsApp.primarydark,
+        side: BorderSide(
+          color: isSelected ? ColorsApp.primarydark : ColorsApp.Grey2,
+          width: 1.3,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontFamily: "Lato",
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }

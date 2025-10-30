@@ -13,13 +13,14 @@ class HrdController {
       final result = await _service.getHrdProfile();
       if (result['success'] == true && result['profile'] != null) {
         final profile = result['profile'] as HrdModel;
-        return profile.logo ?? 'Assets/image/house.png';
-      } else {
-        return 'Assets/image/house.png';
+        // Pastikan URL logo valid (mulai dengan http)
+        if (profile.logo.isNotEmpty && profile.logo.startsWith('http')) {
+          return profile.logo;
+        }
       }
-    } catch (_) {
-      return 'Assets/image/house.png';
-    }
+    } catch (_) {}
+    // fallback: gunakan path asset lowercase sesuai folder project
+    return 'assets/image/house.png';
   }
 
   /// Pilih gambar dari galeri dan update logo HRD ke backend

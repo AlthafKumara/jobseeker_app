@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:jobseeker_app/controllers/auth_controller.dart';
 import 'package:jobseeker_app/controllers/portofolio_controller.dart';
 import 'package:jobseeker_app/controllers/skill_controller.dart';
 import 'package:jobseeker_app/controllers/society_controller.dart';
@@ -22,9 +23,10 @@ class SocietyProfile extends StatefulWidget {
 }
 
 class _SocietyProfileState extends State<SocietyProfile> {
-  late SocietyController _societyController;
-  late PortfolioController _portfolioController;
-  late TextEditingController _descriptionController;
+  final SocietyController _societyController = SocietyController();
+  final PortfolioController _portfolioController = PortfolioController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final AuthController _authController = AuthController();
 
   bool _isLoading = false;
   Society? societyProfile;
@@ -34,9 +36,6 @@ class _SocietyProfileState extends State<SocietyProfile> {
   @override
   void initState() {
     super.initState();
-    _societyController = SocietyController();
-    _portfolioController = PortfolioController();
-    _descriptionController = TextEditingController();
     _initProfile();
   }
 
@@ -88,6 +87,12 @@ class _SocietyProfileState extends State<SocietyProfile> {
         );
       }
     });
+  }
+
+  void _handleLogout() async {
+    setState(() => _isLoading = true);
+    await _authController.logout(context);
+    setState(() => _isLoading = false);
   }
 
   Future<void> _refreshProfile() async => _initProfile();
@@ -558,6 +563,99 @@ class _SocietyProfileState extends State<SocietyProfile> {
                       color: Colors.grey,
                     ),
                   ),
+
+                SizedBox(height: 24),
+
+                ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                        backgroundColor: ColorsApp.white,
+                        foregroundColor: ColorsApp.primarydark,
+                        side: const BorderSide(
+                          width: 1,
+                          color: ColorsApp.primarydark,
+                        )),
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        barrierDismissible:
+                            false, // supaya harus pilih Ya / Tidak
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            backgroundColor: ColorsApp.white,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            title: const Text(
+                              'Konfirmasi Logout',
+                              style: TextStyle(
+                                color: ColorsApp.primarydark,
+                                fontFamily: "Lato",
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            content: const Text(
+                              'Apakah Anda yakin ingin keluar dari akun ini?',
+                              style: TextStyle(
+                                color: ColorsApp.Grey1,
+                                fontFamily: "Lato",
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                child: const Text(
+                                  'Batal',
+                                  style: TextStyle(color: ColorsApp.Grey1),
+                                ),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: ColorsApp.primarydark,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                child: const Text(
+                                  'Ya, Keluar',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      // Jika user menekan "Ya, Keluar", baru eksekusi logout
+                      if (confirm == true) {
+                        _handleLogout();
+                      }
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.logout,
+                            size: 20, color: ColorsApp.primarydark),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          "Log Out",
+                          style: TextStyle(
+                            color: ColorsApp.primarydark,
+                            fontFamily: "Lato",
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ))
               ],
             ),
           ),
