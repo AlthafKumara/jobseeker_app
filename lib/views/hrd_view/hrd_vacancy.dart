@@ -181,7 +181,6 @@ class _HrdVacancyState extends State<HrdVacancy> {
                 ),
                 SizedBox(height: 28),
                 Container(
-                  height: MediaQuery.of(context).size.height * 0.8,
                   width: double.infinity,
                   margin: const EdgeInsets.only(bottom: 40),
                   child: _vacanciesActive

@@ -12,6 +12,7 @@ import 'package:jobseeker_app/views/hrd_view/hrd_profile.dart';
 import 'package:jobseeker_app/views/hrd_view/hrd_search.dart';
 import 'package:jobseeker_app/views/hrd_view/hrd_update_profile.dart';
 import 'package:jobseeker_app/views/hrd_view/hrd_vacancy.dart';
+import 'package:jobseeker_app/views/hrd_view/hrd_vacancy_detail.dart';
 import 'package:jobseeker_app/views/society_view/society_dashboard.dart';
 import 'package:jobseeker_app/views/society_view/society_profile.dart';
 import 'package:jobseeker_app/views/society_view/society_search.dart';
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
         '/hrd_search': (context) => HrdSearch(),
         '/hrd_update_profile': (context) => UpdateHrdProfileView(),
         '/hrd_create_vacancy': (context) => HrdCreateVacancyView(),
+        '/hrd_vacancy_detail': (context) => HrdVacancyDetail(),
 
         // SOCIETY PAGE
         '/society_dashboard': (context) => SocietyDashboard(),
@@ -53,6 +55,6 @@ class MyApp extends StatelessWidget {
         '/society_vacancy': (context) => SocietyVacancy(),
         '/society_profile': (context) => SocietyProfile(),
       },
-    );  
+    );
   }
 }
