@@ -619,7 +619,7 @@ class _SocietyProfileState extends State<SocietyProfile> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                ),
+                               ),
                                 onPressed: () =>
                                     Navigator.of(context).pop(true),
                                 child: const Text(

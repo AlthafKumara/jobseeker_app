@@ -18,7 +18,8 @@ class HrdService {
     required String address,
     required String phone,
     required String description,
-    required String defaultAssetPath, // contoh: 'assets/image/company.png'
+    String defaultAssetPath =
+        'assets/image/house.png', // contoh: 'assets/image/company.png'
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -68,11 +69,11 @@ class HrdService {
       }
 
       if (response.statusCode == 200 && responseData['success'] == true) {
-        final profile = HrdModel.fromJson(responseData['profile']);
+        final profile = HrdModel.fromJson(responseData['data']);
         return {
           'success': true,
           'message': responseData['message'] ?? 'Profile updated successfully',
-          'profile': profile,
+          'data': profile,
         };
       } else {
         return {
@@ -117,7 +118,7 @@ class HrdService {
       final data = jsonDecode(responseBody);
 
       if (response.statusCode == 200 && data['success'] == true) {
-        final profile = HrdModel.fromJson(data['profile']);
+        final profile = HrdModel.fromJson(data['data']);
         return {
           'success': true,
           'message': data['message'] ?? 'Logo updated successfully',
@@ -167,7 +168,7 @@ class HrdService {
         final profile = HrdModel.fromJson(data['data']);
         return {
           'success': true,
-          'profile': profile,
+          'data': profile,
         };
       } else {
         final body = jsonDecode(response.body);

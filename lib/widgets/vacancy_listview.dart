@@ -50,7 +50,10 @@ class VacancyListView extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => HrdVacancyDetail(),
+                builder: (context) => HrdVacancyDetail(
+                  vacancy: vacancy,
+                  hrd: hrd!,
+                ),
               ),
             );
           },
@@ -72,11 +75,11 @@ class VacancyListView extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Image.network(hrd!.logo, width: 40, height: 40),
+                Image.network(hrd!.logo!, width: 40, height: 40),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(hrd!.name,
+                    Text(hrd!.name!,
                         style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -88,7 +91,7 @@ class VacancyListView extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                             fontFamily: "Lato")),
                     const SizedBox(height: 4),
-                    Text(hrd!.address,
+                    Text(hrd!.address!,
                         style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,

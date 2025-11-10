@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:jobseeker_app/views/society_view/society_applied_details.dart';
+import 'package:jobseeker_app/views/society_view/society_vacancy_details.dart';
 import 'package:jobseeker_app/widgets/colors.dart';
 
 class SocietyDashboardListView extends StatelessWidget {
@@ -33,33 +33,93 @@ class SocietyDashboardListView extends StatelessWidget {
         "submission_end_date": "25 Nov 2025",
         "is_active": true,
       },
+      {
+        "position_name": "Backend Developer",
+        "company_name": "Telkom Indonesia",
+        "company_address": "Malang City, Indonesia",
+        "submission_start_date": "07 Nov 2025",
+        "submission_end_date": "02 Dec 2025",
+        "is_active": true,
+      },
+      {
+        "position_name": "UI Designer",
+        "company_name": "Telegram",
+        "company_address": "Jakarta, Indonesia",
+        "submission_start_date": "05 Nov 2025",
+        "submission_end_date": "30 Nov 2025",
+        "is_active": true,
+      },
+      {
+        "position_name": "Human Resources",
+        "company_name": "Autodesk",
+        "company_address": "Bandung, Indonesia",
+        "submission_start_date": "03 Nov 2025",
+        "submission_end_date": "25 Nov 2025",
+        "is_active": true,
+      },
     ];
+
+    // Ambil hanya sampai batas maksimal (misal 5 item)
+    final int maxLength = 5;
+    final List<Map<String, dynamic>> visibleJobs =
+        jobs.length > maxLength ? jobs.sublist(0, maxLength) : jobs;
 
     return SizedBox(
       height: 230,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        shrinkWrap: true,
-        clipBehavior: Clip.none,
-        itemCount: jobs.length,
+        padding: const EdgeInsets.only(right: 16),
+        itemCount: visibleJobs.length +
+            (jobs.length > maxLength ? 1 : 0), // +1 untuk See More
         itemBuilder: (context, index) {
-          final job = jobs[index];
+          // Jika index terakhir dan masih ada lebih banyak data → tampilkan "See More"
+          if (index == visibleJobs.length && jobs.length > maxLength) {
+            return GestureDetector(
+              onTap: () {
+                Navigator.pushReplacementNamed(context, "/society_search");
+              },
+              child: Container(
+                width: 80,
+                margin: const EdgeInsets.only(right: 8),
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundColor: ColorsApp.primarydark,
+                      child: Icon(Icons.arrow_forward_ios,
+                          size: 14, color: ColorsApp.white),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "See More",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: ColorsApp.primarydark,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          final job = visibleJobs[index];
 
           // ✅ Parsing dan hitung "days ago"
           DateTime startDate =
               DateFormat("dd MMM yyyy").parse(job["submission_start_date"]!);
           int daysAgo = DateTime.now().difference(startDate).inDays;
 
-          // ✅ Jika tanggal di masa depan → "Starts in ..."
           String updatedDateText = daysAgo < 0
               ? "Starts in ${daysAgo.abs()} days"
               : (daysAgo == 0 ? "Created today" : "Created $daysAgo days ago");
 
           return Container(
             width: 220,
-            margin: EdgeInsets.only(
-              right: index == jobs.length - 1 ? 0 : 16,
-            ),
+            margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: ColorsApp.white,
@@ -76,7 +136,6 @@ class SocietyDashboardListView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Icon perusahaan
                 Container(
                   width: 40,
                   height: 40,
@@ -135,7 +194,6 @@ class SocietyDashboardListView extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // ✅ Menampilkan teks "Created ... days ago"
                     Text(
                       updatedDateText,
                       style: const TextStyle(
@@ -148,7 +206,7 @@ class SocietyDashboardListView extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const SocietyAppliedDetails(),
+                            builder: (context) => const SocietyVacancyDetails(),
                           ),
                         );
                       },

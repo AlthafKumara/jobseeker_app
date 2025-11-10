@@ -11,11 +11,13 @@ class HrdController {
   Future<String> loadInitialLogo() async {
     try {
       final result = await _service.getHrdProfile();
-      if (result['success'] == true && result['profile'] != null) {
-        final profile = result['profile'] as HrdModel;
+      if (result['success'] == true && result['data'] != null) {
+        final profile = result['data'] as HrdModel;
         // Pastikan URL logo valid (mulai dengan http)
-        if (profile.logo.isNotEmpty && profile.logo.startsWith('http')) {
-          return profile.logo;
+        if (profile.logo != null &&
+            profile.logo!.isNotEmpty &&
+            profile.logo!.startsWith('http')) {
+          return profile.logo!;
         }
       }
     } catch (_) {}
@@ -33,8 +35,8 @@ class HrdController {
 
       final result = await _service.updateHrdLogo(imagePath: picked.path);
 
-      if (result['success'] == true && result['profile'] != null) {
-        final updatedProfile = result['profile'] as HrdModel;
+      if (result['success'] == true && result['data'] != null) {
+        final updatedProfile = result['data'] as HrdModel;
         return {
           'success': true,
           'message': result['message'] ?? 'Logo berhasil diperbarui ✅',
@@ -54,12 +56,12 @@ class HrdController {
       };
     }
   }
-
+  
   Future<HrdModel?> getProfile() async {
     final result = await _service.getHrdProfile();
 
-    if (result['success'] == true && result['profile'] != null) {
-      return result['profile'] as HrdModel;
+    if (result['success'] == true && result['data'] != null) {
+      return result['data'] as HrdModel;
     } else {
       print('❌ Gagal memuat profil HRD: ${result['message']}');
       return null;
@@ -80,11 +82,11 @@ class HrdController {
     );
 
     if (result['success'] == true) {
-      final updatedProfile = result['profile'] as HrdModel;
+      final updatedProfile = result['data'] as HrdModel;
       return {
         'success': true,
         'message': result['message'] ?? 'Profile updated successfully ✅',
-        'profile': updatedProfile,
+        'data': updatedProfile,
       };
     } else {
       return {

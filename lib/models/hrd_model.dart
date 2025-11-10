@@ -1,16 +1,16 @@
 class HrdModel {
-  final String name;
-  final String address;
-  final String phone;
-  final String description;
-  final String logo;
+  final String? name;
+  final String? address;
+  final String? phone;
+  final String? description;
+  final String? logo;
 
   HrdModel({
-    required this.name,
-    required this.address,
-    required this.phone,
-    required this.description,
-    required this.logo,
+    this.name,
+    this.address,
+    this.phone,
+    this.description,
+    this.logo,
   });
 
   Map<String, dynamic> toJson() {

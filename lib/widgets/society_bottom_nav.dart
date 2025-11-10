@@ -14,7 +14,8 @@ class _SocietyBottomNavState extends State<SocietyBottomNav> {
     if (index == 0) {
       Navigator.pushReplacementNamed(context, '/society_dashboard');
     } else if (index == 1) {
-      Navigator.pushReplacementNamed(context, '/society_search');
+      Navigator.pushReplacementNamed(context, '/society_search',
+          arguments: {"fromdashboard": false});
     } else if (index == 2) {
       Navigator.pushReplacementNamed(context, '/society_vacancy');
     } else if (index == 3) {

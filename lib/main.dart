@@ -47,7 +47,6 @@ class MyApp extends StatelessWidget {
         '/hrd_search': (context) => HrdSearch(),
         '/hrd_update_profile': (context) => UpdateHrdProfileView(),
         '/hrd_create_vacancy': (context) => HrdCreateVacancyView(),
-        '/hrd_vacancy_detail': (context) => HrdVacancyDetail(),
 
         // SOCIETY PAGE
         '/society_dashboard': (context) => SocietyDashboard(),

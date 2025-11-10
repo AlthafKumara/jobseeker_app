@@ -1,39 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:jobseeker_app/controllers/hrd_controller.dart';
-import 'package:jobseeker_app/models/hrd_model.dart';
-import 'package:jobseeker_app/models/vacancy_model.dart';
-import 'package:jobseeker_app/widgets/colors.dart';
 import 'package:intl/intl.dart';
+import 'package:jobseeker_app/widgets/colors.dart';
 
-class HrdVacancyDetail extends StatefulWidget {
-  final VacancyModel vacancy;
-  final HrdModel hrd;
-
-  const HrdVacancyDetail({
-    super.key,
-    required this.vacancy,
-    required this.hrd,
-  });
+class SocietyVacancyDetails extends StatefulWidget {
+  const SocietyVacancyDetails({super.key});
 
   @override
-  State<HrdVacancyDetail> createState() => _HrdVacancyDetailState();
+  State<SocietyVacancyDetails> createState() => _SocietyVacancyDetailsState();
 }
 
-class _HrdVacancyDetailState extends State<HrdVacancyDetail> {
+class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
   bool isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
-    final vacancy = widget.vacancy;
-    final hrd = widget.hrd;
+    final company = {
+      "name": "Telkom Indonesia",
+      "logo": "",
+      "address": "Malang City, Indonesia",
+    };
+
+    final vacancyDetail = {
+      "positionName": "Software Engineer",
+      "description":
+          "Posisi Software Engineer di SMK Telkom Malang membuka kesempatan bagi individu yang bersemangat di bidang teknologi untuk berkontribusi dalam pengembangan sistem digital pendidikan. Kandidat akan berperan dalam merancang, mengembangkan, dan memelihara berbagai aplikasi serta sistem internal sekolah yang mendukung kegiatan akademik dan administrasi. Kolaborasi dengan tim IT, guru, dan manajemen menjadi bagian penting dalam menciptakan solusi inovatif dan efisien bagi lingkungan sekolah.\n\nKami mencari seseorang yang memiliki kemampuan pemrograman yang solid, memahami konsep pengembangan berbasis framework, serta terbiasa menggunakan bahasa pemrograman seperti JavaScript, Python, atau Java. Pengalaman dengan basis data, API, dan version control seperti Git akan menjadi nilai tambah. Lowongan ini hanya tersedia untuk 1 orang kandidat, dengan periode pendaftaran dari 1 November 2025 hingga 30 November 2025, dan saat ini berstatus Aktif. Bergabunglah bersama kami untuk menciptakan inovasi teknologi di dunia pendidikan digital.",
+      "capacity": "1",
+      "start_date": "01-11-2025",
+      "end_date": "30-11-2025",
+      "status": "Active",
+    };
 
     // 🔹 Parsing tanggal dan menghitung selisih
     DateTime startDate =
-        DateFormat("yyyy-MM-dd").parse(vacancy.submissionStartDate.toString());
+        DateFormat("dd-MM-yyyy").parse(vacancyDetail["start_date"]!);
     int daysAgo = DateTime.now().difference(startDate).inDays;
 
-    String updatedDateText =
-        daysAgo <= 0 ? "Created Today" : "Created $daysAgo days ago";
+    // 🔹 Jika tanggal di masa depan
+    String updatedDateText = daysAgo < 0
+        ? "Starts in ${daysAgo.abs()} days"
+        : "Created $daysAgo days ago";
 
     return Scaffold(
       backgroundColor: ColorsApp.white,
@@ -65,20 +70,22 @@ class _HrdVacancyDetailState extends State<HrdVacancyDetail> {
                     Icon(Icons.arrow_back, color: ColorsApp.white, size: 20),
                   ],
                 ),
-                const SizedBox(height: 24),
-
+                SizedBox(height: 24),
                 // Company Info
                 Row(
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.network(
-                        hrd.logo ?? "",
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                            color: ColorsApp.Grey2, width: 60, height: 60),
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        image: company["logo"] != ""
+                            ? DecorationImage(
+                                image: NetworkImage(company["logo"]!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                        color: ColorsApp.Grey2,
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -86,8 +93,8 @@ class _HrdVacancyDetailState extends State<HrdVacancyDetail> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          hrd.name ?? "",
-                          style: const TextStyle(
+                          company["name"] ?? "",
+                          style: TextStyle(
                             fontFamily: "Lato",
                             color: ColorsApp.black,
                             fontSize: 11,
@@ -96,8 +103,8 @@ class _HrdVacancyDetailState extends State<HrdVacancyDetail> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          vacancy.positionName,
-                          style: const TextStyle(
+                          vacancyDetail["positionName"] ?? "",
+                          style: TextStyle(
                             fontFamily: "Lato",
                             color: ColorsApp.black,
                             fontSize: 16,
@@ -114,12 +121,12 @@ class _HrdVacancyDetailState extends State<HrdVacancyDetail> {
                 // Location
                 Row(
                   children: [
-                    const Icon(Icons.location_on_outlined,
+                    Icon(Icons.location_on_outlined,
                         color: ColorsApp.primarydark, size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      hrd.address ?? "",
-                      style: const TextStyle(
+                      company["address"] ?? "",
+                      style: TextStyle(
                         fontFamily: "Lato",
                         color: ColorsApp.Grey1,
                         fontSize: 14,
@@ -131,13 +138,13 @@ class _HrdVacancyDetailState extends State<HrdVacancyDetail> {
 
                 const SizedBox(height: 24),
 
-                // Info tanggal dan status
+                // 🔹 Created ... days ago
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       updatedDateText,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: "Lato",
                         color: ColorsApp.Grey1,
                         fontSize: 12,
@@ -145,12 +152,14 @@ class _HrdVacancyDetailState extends State<HrdVacancyDetail> {
                       ),
                     ),
                     Text(
-                      vacancy.status ?? "",
+                      vacancyDetail["status"]!,
                       style: TextStyle(
                         fontFamily: "Lato",
-                        color: vacancy.status == "Active"
+                        color: vacancyDetail["status"] == "Active"
                             ? Colors.green
-                            : Colors.red,
+                            : vacancyDetail["status"] == "Inactive"
+                                ? Colors.red
+                                : ColorsApp.Grey1,
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                       ),
@@ -161,7 +170,7 @@ class _HrdVacancyDetailState extends State<HrdVacancyDetail> {
                 const SizedBox(height: 24),
 
                 // Job Description
-                const Text(
+                Text(
                   "Job Description",
                   style: TextStyle(
                     fontFamily: "Lato",
@@ -171,8 +180,31 @@ class _HrdVacancyDetailState extends State<HrdVacancyDetail> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _description(vacancy.description),
+
+                _description(vacancyDetail["description"] ?? ""),
               ],
+            ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 30),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 50),
+            backgroundColor: ColorsApp.primarydark,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onPressed: () {},
+          child: const Text(
+            'Apply',
+            style: TextStyle(
+              color: ColorsApp.white,
+              fontFamily: "Lato",
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -181,7 +213,7 @@ class _HrdVacancyDetailState extends State<HrdVacancyDetail> {
   }
 
   Widget _description(String text) {
-    return SizedBox(
+    return Container(
       height: 140,
       child: Stack(
         children: [
