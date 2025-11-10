@@ -1,155 +1,131 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:jobseeker_app/controllers/vacancy_controller.dart';
+import 'package:jobseeker_app/models/vacancy_model.dart';
 import 'package:jobseeker_app/views/society_view/society_vacancy_details.dart';
 import 'package:jobseeker_app/widgets/colors.dart';
 
-class SocietyListViewDashboard extends StatelessWidget {
+class SocietyListViewDashboard extends StatefulWidget {
   const SocietyListViewDashboard({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> jobs = [
-      {
-        "position_name": "Backend Developer",
-        "company_name": "Telkom Indonesia",
-        "company_address": "Malang City, Indonesia",
-        "submission_start_date": "07 Nov 2025",
-        "submission_end_date": "02 Dec 2025",
-        "is_active": true,
-      },
-      {
-        "position_name": "UI Designer",
-        "company_name": "Telegram",
-        "company_address": "Jakarta, Indonesia",
-        "submission_start_date": "05 Nov 2025",
-        "submission_end_date": "30 Nov 2025",
-        "is_active": true,
-      },
-      {
-        "position_name": "Human Resources",
-        "company_name": "Autodesk",
-        "company_address": "Bandung, Indonesia",
-        "submission_start_date": "03 Nov 2025",
-        "submission_end_date": "25 Nov 2025",
-        "is_active": true,
-      },
-      {
-        "position_name": "Backend Developer",
-        "company_name": "Telkom Indonesia",
-        "company_address": "Malang City, Indonesia",
-        "submission_start_date": "07 Nov 2025",
-        "submission_end_date": "02 Dec 2025",
-        "is_active": true,
-      },
-      {
-        "position_name": "UI Designer",
-        "company_name": "Telegram",
-        "company_address": "Jakarta, Indonesia",
-        "submission_start_date": "05 Nov 2025",
-        "submission_end_date": "30 Nov 2025",
-        "is_active": true,
-      },
-      {
-        "position_name": "Human Resources",
-        "company_name": "Autodesk",
-        "company_address": "Bandung, Indonesia",
-        "submission_start_date": "03 Nov 2025",
-        "submission_end_date": "25 Nov 2025",
-        "is_active": true,
-      },
-      {
-        "position_name": "Backend Developer",
-        "company_name": "Telkom Indonesia",
-        "company_address": "Malang City, Indonesia",
-        "submission_start_date": "07 Nov 2025",
-        "submission_end_date": "02 Dec 2025",
-        "is_active": true,
-      },
-      {
-        "position_name": "UI Designer",
-        "company_name": "Telegram",
-        "company_address": "Jakarta, Indonesia",
-        "submission_start_date": "05 Nov 2025",
-        "submission_end_date": "30 Nov 2025",
-        "is_active": true,
-      },
-      {
-        "position_name": "Human Resources",
-        "company_name": "Autodesk",
-        "company_address": "Bandung, Indonesia",
-        "submission_start_date": "03 Nov 2025",
-        "submission_end_date": "25 Nov 2025",
-        "is_active": true,
-      },
-    ];
+  State<SocietyListViewDashboard> createState() =>
+      _SocietyListViewDashboardState();
+}
 
-    // Ambil hanya sampai batas maksimal
-    final List<Map<String, dynamic>> visibleJobs =
-        jobs.length > 7 ? jobs.sublist(0, 5) : jobs;
+class _SocietyListViewDashboardState extends State<SocietyListViewDashboard> {
+  final VacancyController _controller = VacancyController();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchVacancies();
+  }
+
+  Future<void> _fetchVacancies() async {
+    await _controller.fetchAllVacancies();
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_controller.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_controller.errorMessage != null) {
+      return Center(child: Text("Error: ${_controller.errorMessage}"));
+    }
+
+    final List<VacancyModel> vacancies = List.from(_controller.vacancies)
+      ..shuffle();
+
+    if (vacancies.isEmpty) {
+      return const Center(child: Text("No vacancies available"));
+    }
+
+    // 🔹 Tampilkan maksimal 5 lowongan di dashboard
+    final int maxLength = 5;
+    final visibleJobs = vacancies.length > maxLength
+        ? vacancies.sublist(0, maxLength)
+        : vacancies;
+
     return SizedBox(
       width: double.infinity,
       child: Column(
         children: [
           ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              clipBehavior: Clip.none,
-              itemCount: visibleJobs.length,
-              itemBuilder: (context, index) {
-                final job = visibleJobs[index];
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            clipBehavior: Clip.none,
+            itemCount: visibleJobs.length,
+            itemBuilder: (context, index) {
+              final job = visibleJobs[index];
 
-                // ✅ Parsing dan hitung "days ago"
-                DateTime startDate = DateFormat("dd MMM yyyy")
-                    .parse(job["submission_start_date"]!);
-                int daysAgo = DateTime.now().difference(startDate).inDays;
+              final String companyName = job.companyName ?? "-";
+              final String companyAddress = job.companyAddress ?? "-";
+              final String positionName = job.positionName ?? "-";
+              final String? companyLogo = job.companyLogo;
 
-                // ✅ Jika tanggal di masa depan → "Starts in ..."
-                String updatedDateText = daysAgo < 0
-                    ? "Starts in ${daysAgo.abs()} days"
-                    : (daysAgo == 0
-                        ? "Created today"
-                        : "Created $daysAgo days ago");
+              // 🔹 Hitung selisih hari dari tanggal posting
+              final DateTime startDate = job.submissionStartDate;
+              final int daysAgo = DateTime.now().difference(startDate).inDays;
 
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  height: 140,
-                  decoration: BoxDecoration(
-                    color: ColorsApp.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.15),
-                        spreadRadius: 4,
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: ColorsApp.primarydark.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              Icons.work_outline,
-                              color: ColorsApp.primarydark,
-                              size: 22,
-                            ),
+              final String updatedDateText = daysAgo < 0
+                  ? "Starts in ${daysAgo.abs()} days"
+                  : (daysAgo == 0
+                      ? "Created today"
+                      : "Created $daysAgo days ago");
+
+              return Container(
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 16),
+                height: 140,
+                decoration: BoxDecoration(
+                  color: ColorsApp.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.15),
+                      spreadRadius: 4,
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: ColorsApp.primarydark.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          const SizedBox(width: 16),
-                          Column(
+                          child: companyLogo != null && companyLogo.isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network(
+                                    companyLogo,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error,
+                                            stackTrace) =>
+                                        const Icon(Icons.image_not_supported,
+                                            color: ColorsApp.primarydark),
+                                  ),
+                                )
+                              : const Icon(Icons.work_outline,
+                                  color: ColorsApp.primarydark, size: 22),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                job['company_name'],
+                                companyName,
                                 style: const TextStyle(
                                   fontFamily: "Lato",
                                   fontSize: 11,
@@ -158,9 +134,9 @@ class SocietyListViewDashboard extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              SizedBox(height: 6),
+                              const SizedBox(height: 6),
                               Text(
-                                job['position_name'],
+                                positionName,
                                 style: const TextStyle(
                                   fontFamily: "Lato",
                                   fontSize: 13,
@@ -170,9 +146,9 @@ class SocietyListViewDashboard extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              SizedBox(height: 6),
+                              const SizedBox(height: 6),
                               Text(
-                                job['company_address'],
+                                companyAddress,
                                 style: const TextStyle(
                                   fontFamily: "Lato",
                                   fontSize: 11,
@@ -183,43 +159,47 @@ class SocietyListViewDashboard extends StatelessWidget {
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                      const Spacer(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(updatedDateText,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: ColorsApp.Grey1,
-                              )),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const SocietyVacancyDetails(),
-                                ),
-                              );
-                            },
-                            child: const Text(
-                              "View Details",
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: ColorsApp.primarydark,
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          updatedDateText,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: ColorsApp.Grey1,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    SocietyVacancyDetails(vacancy: job),
                               ),
+                            );
+                          },
+                          child: const Text(
+                            "View Details",
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: ColorsApp.primarydark,
                             ),
                           ),
-                        ],
-                      )
-                    ],
-                  ),
-                );
-              }),
-          if (visibleJobs.length < jobs.length)
-            Container(
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          if (vacancies.length > maxLength)
+            SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -233,7 +213,7 @@ class SocietyListViewDashboard extends StatelessWidget {
                 ),
                 onPressed: () =>
                     Navigator.pushReplacementNamed(context, "/society_search"),
-                child: Text(
+                child: const Text(
                   'See more',
                   style: TextStyle(color: ColorsApp.primarydark),
                 ),

@@ -1,83 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:jobseeker_app/controllers/vacancy_controller.dart';
 import 'package:jobseeker_app/views/society_view/society_vacancy_details.dart';
 import 'package:jobseeker_app/widgets/colors.dart';
 
-class SocietyDashboardListView extends StatelessWidget {
+class SocietyDashboardListView extends StatefulWidget {
   const SocietyDashboardListView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> jobs = [
-      {
-        "position_name": "Backend Developer",
-        "company_name": "Telkom Indonesia",
-        "company_address": "Malang City, Indonesia",
-        "submission_start_date": "07 Nov 2025",
-        "submission_end_date": "02 Dec 2025",
-        "is_active": true,
-      },
-      {
-        "position_name": "UI Designer",
-        "company_name": "Telegram",
-        "company_address": "Jakarta, Indonesia",
-        "submission_start_date": "05 Nov 2025",
-        "submission_end_date": "30 Nov 2025",
-        "is_active": true,
-      },
-      {
-        "position_name": "Human Resources",
-        "company_name": "Autodesk",
-        "company_address": "Bandung, Indonesia",
-        "submission_start_date": "03 Nov 2025",
-        "submission_end_date": "25 Nov 2025",
-        "is_active": true,
-      },
-      {
-        "position_name": "Backend Developer",
-        "company_name": "Telkom Indonesia",
-        "company_address": "Malang City, Indonesia",
-        "submission_start_date": "07 Nov 2025",
-        "submission_end_date": "02 Dec 2025",
-        "is_active": true,
-      },
-      {
-        "position_name": "UI Designer",
-        "company_name": "Telegram",
-        "company_address": "Jakarta, Indonesia",
-        "submission_start_date": "05 Nov 2025",
-        "submission_end_date": "30 Nov 2025",
-        "is_active": true,
-      },
-      {
-        "position_name": "Human Resources",
-        "company_name": "Autodesk",
-        "company_address": "Bandung, Indonesia",
-        "submission_start_date": "03 Nov 2025",
-        "submission_end_date": "25 Nov 2025",
-        "is_active": true,
-      },
-    ];
+  State<SocietyDashboardListView> createState() =>
+      _SocietyDashboardListViewState();
+}
 
-    // Ambil hanya sampai batas maksimal (misal 5 item)
+class _SocietyDashboardListViewState extends State<SocietyDashboardListView> {
+  final VacancyController _controller = VacancyController();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchVacancies();
+  }
+
+  Future<void> _fetchVacancies() async {
+    await _controller.fetchAllVacancies();
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_controller.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_controller.errorMessage != null) {
+      return Center(child: Text("Error: ${_controller.errorMessage}"));
+    }
+
+    final vacancies = List.from(_controller.vacancies)..shuffle();
+
+    if (vacancies.isEmpty) {
+      return const Center(child: Text("No vacancies available"));
+    }
+
     final int maxLength = 5;
-    final List<Map<String, dynamic>> visibleJobs =
-        jobs.length > maxLength ? jobs.sublist(0, maxLength) : jobs;
+    final visibleJobs = vacancies.length > maxLength
+        ? vacancies.sublist(0, maxLength)
+        : vacancies;
 
     return SizedBox(
       height: 230,
       child: ListView.builder(
+        clipBehavior: Clip.none,
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.only(right: 16),
-        itemCount: visibleJobs.length +
-            (jobs.length > maxLength ? 1 : 0), // +1 untuk See More
+        itemCount: visibleJobs.length + (vacancies.length > maxLength ? 1 : 0),
         itemBuilder: (context, index) {
-          // Jika index terakhir dan masih ada lebih banyak data → tampilkan "See More"
-          if (index == visibleJobs.length && jobs.length > maxLength) {
+          // == "See More" button ==
+          if (index == visibleJobs.length && vacancies.length > maxLength) {
             return GestureDetector(
-              onTap: () {
-                Navigator.pushReplacementNamed(context, "/society_search");
-              },
+              onTap: () =>
+                  Navigator.pushReplacementNamed(context, "/society_search"),
               child: Container(
                 width: 80,
                 margin: const EdgeInsets.only(right: 8),
@@ -107,16 +89,25 @@ class SocietyDashboardListView extends StatelessWidget {
           }
 
           final job = visibleJobs[index];
+          final companyname = job.companyName;
+          final companyaddress = job.companyAddress;
+          final companylogo = job.companyLogo;
 
-          // ✅ Parsing dan hitung "days ago"
-          DateTime startDate =
-              DateFormat("dd MMM yyyy").parse(job["submission_start_date"]!);
-          int daysAgo = DateTime.now().difference(startDate).inDays;
+          // === Extract data ===
+          final String companyName = companyname ?? '-';
+          final String companyAddress = companyaddress ?? '-';
+          final String? companyLogo = companylogo;
+          final String positionName = job.positionName ?? '-';
 
-          String updatedDateText = daysAgo < 0
+          // === Parse submission date ===
+          final DateTime startDate = job.submissionStartDate;
+          final int daysAgo = DateTime.now().difference(startDate).inDays;
+
+          final String updatedDateText = daysAgo < 0
               ? "Starts in ${daysAgo.abs()} days"
               : (daysAgo == 0 ? "Created today" : "Created $daysAgo days ago");
 
+          // === UI Card ===
           return Container(
             width: 220,
             margin: const EdgeInsets.only(right: 16),
@@ -136,22 +127,33 @@ class SocietyDashboardListView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // === Company Logo ===
                 Container(
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: ColorsApp.primarydark.withOpacity(0.2),
+                    color: ColorsApp.primarydark.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
-                    Icons.work_outline,
-                    color: ColorsApp.primarydark,
-                    size: 22,
-                  ),
+                  child: companyLogo != null && companyLogo.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(
+                            companyLogo,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.image_not_supported,
+                                    color: ColorsApp.primarydark),
+                          ),
+                        )
+                      : const Icon(Icons.work_outline,
+                          color: ColorsApp.primarydark),
                 ),
                 const SizedBox(height: 12),
+
+                // === Company Name ===
                 Text(
-                  job['company_name'],
+                  companyName,
                   style: const TextStyle(
                     fontFamily: "Lato",
                     fontSize: 12,
@@ -161,8 +163,10 @@ class SocietyDashboardListView extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
+
+                // === Position ===
                 Text(
-                  job['position_name'],
+                  positionName,
                   style: const TextStyle(
                     fontFamily: "Lato",
                     fontSize: 14,
@@ -173,13 +177,15 @@ class SocietyDashboardListView extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
+
+                // === Address ===
                 Row(
                   children: [
                     const Icon(Icons.location_on, size: 14, color: Colors.grey),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        job['company_address'],
+                        companyAddress,
                         style: const TextStyle(
                           fontSize: 11,
                           color: Colors.grey,
@@ -191,22 +197,22 @@ class SocietyDashboardListView extends StatelessWidget {
                   ],
                 ),
                 const Spacer(),
+
+                // === Footer: Date + Detail Button ===
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       updatedDateText,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey,
-                      ),
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
                     ),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const SocietyVacancyDetails(),
+                            builder: (context) =>
+                                SocietyVacancyDetails(vacancy: job),
                           ),
                         );
                       },

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:jobseeker_app/models/vacancy_model.dart';
 import 'package:jobseeker_app/widgets/colors.dart';
 
 class SocietyVacancyDetails extends StatefulWidget {
-  const SocietyVacancyDetails({super.key});
+  final VacancyModel vacancy;
+
+  const SocietyVacancyDetails({super.key, required this.vacancy});
 
   @override
   State<SocietyVacancyDetails> createState() => _SocietyVacancyDetailsState();
@@ -14,36 +17,29 @@ class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
 
   @override
   Widget build(BuildContext context) {
-    final company = {
-      "name": "Telkom Indonesia",
-      "logo": "",
-      "address": "Malang City, Indonesia",
-    };
+    final vacancy = widget.vacancy;
+    final companyname = vacancy.companyName;
+    final companyaddress = vacancy.companyAddress;
+    final companylogo = vacancy.companyLogo;
 
-    final vacancyDetail = {
-      "positionName": "Software Engineer",
-      "description":
-          "Posisi Software Engineer di SMK Telkom Malang membuka kesempatan bagi individu yang bersemangat di bidang teknologi untuk berkontribusi dalam pengembangan sistem digital pendidikan. Kandidat akan berperan dalam merancang, mengembangkan, dan memelihara berbagai aplikasi serta sistem internal sekolah yang mendukung kegiatan akademik dan administrasi. Kolaborasi dengan tim IT, guru, dan manajemen menjadi bagian penting dalam menciptakan solusi inovatif dan efisien bagi lingkungan sekolah.\n\nKami mencari seseorang yang memiliki kemampuan pemrograman yang solid, memahami konsep pengembangan berbasis framework, serta terbiasa menggunakan bahasa pemrograman seperti JavaScript, Python, atau Java. Pengalaman dengan basis data, API, dan version control seperti Git akan menjadi nilai tambah. Lowongan ini hanya tersedia untuk 1 orang kandidat, dengan periode pendaftaran dari 1 November 2025 hingga 30 November 2025, dan saat ini berstatus Aktif. Bergabunglah bersama kami untuk menciptakan inovasi teknologi di dunia pendidikan digital.",
-      "capacity": "1",
-      "start_date": "01-11-2025",
-      "end_date": "30-11-2025",
-      "status": "Active",
-    };
+    // 🔹 Parsing tanggal & menghitung selisih
+    final DateTime startDate = vacancy.submissionStartDate.toLocal();
+    final DateTime endDate = vacancy.submissionEndDate.toLocal();
+    final int daysAgo = DateTime.now().difference(startDate).inDays;
 
-    // 🔹 Parsing tanggal dan menghitung selisih
-    DateTime startDate =
-        DateFormat("dd-MM-yyyy").parse(vacancyDetail["start_date"]!);
-    int daysAgo = DateTime.now().difference(startDate).inDays;
-
-    // 🔹 Jika tanggal di masa depan
-    String updatedDateText = daysAgo < 0
+    final String updatedDateText = daysAgo < 0
         ? "Starts in ${daysAgo.abs()} days"
-        : "Created $daysAgo days ago";
+        : (daysAgo == 0 ? "Created today" : "Created $daysAgo days ago");
+
+    final String startDateFormatted =
+        DateFormat("dd MMM yyyy").format(startDate);
+    final String endDateFormatted = DateFormat("dd MMM yyyy").format(endDate);
 
     return Scaffold(
       backgroundColor: ColorsApp.white,
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 30),
             child: Column(
@@ -55,7 +51,7 @@ class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: Icon(Icons.arrow_back,
+                      child: const Icon(Icons.arrow_back,
                           color: ColorsApp.primarydark, size: 20),
                     ),
                     const Text(
@@ -67,10 +63,12 @@ class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    Icon(Icons.arrow_back, color: ColorsApp.white, size: 20),
+                    const SizedBox(width: 20), // spacing
                   ],
                 ),
-                SizedBox(height: 24),
+
+                const SizedBox(height: 24),
+
                 // Company Info
                 Row(
                   children: [
@@ -78,23 +76,26 @@ class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
                       width: 60,
                       height: 60,
                       decoration: BoxDecoration(
-                        image: company["logo"] != ""
+                        color: ColorsApp.Grey2,
+                        borderRadius: BorderRadius.circular(10),
+                        image: companylogo != null && companylogo!.isNotEmpty
                             ? DecorationImage(
-                                image: NetworkImage(company["logo"]!),
+                                image: NetworkImage(companylogo!),
                                 fit: BoxFit.cover,
                               )
                             : null,
-                        color: ColorsApp.Grey2,
-                        borderRadius: BorderRadius.circular(10),
                       ),
+                      child: companylogo == null || companylogo!.isEmpty
+                          ? const Icon(Icons.apartment, color: Colors.grey)
+                          : null,
                     ),
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          company["name"] ?? "",
-                          style: TextStyle(
+                          companyname ?? "",
+                          style: const TextStyle(
                             fontFamily: "Lato",
                             color: ColorsApp.black,
                             fontSize: 11,
@@ -103,8 +104,8 @@ class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          vacancyDetail["positionName"] ?? "",
-                          style: TextStyle(
+                          vacancy.positionName,
+                          style: const TextStyle(
                             fontFamily: "Lato",
                             color: ColorsApp.black,
                             fontSize: 16,
@@ -121,12 +122,12 @@ class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
                 // Location
                 Row(
                   children: [
-                    Icon(Icons.location_on_outlined,
+                    const Icon(Icons.location_on_outlined,
                         color: ColorsApp.primarydark, size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      company["address"] ?? "",
-                      style: TextStyle(
+                      companyaddress ?? "",
+                      style: const TextStyle(
                         fontFamily: "Lato",
                         color: ColorsApp.Grey1,
                         fontSize: 14,
@@ -138,13 +139,13 @@ class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
 
                 const SizedBox(height: 24),
 
-                // 🔹 Created ... days ago
+                // Created ... days ago + status
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       updatedDateText,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontFamily: "Lato",
                         color: ColorsApp.Grey1,
                         fontSize: 12,
@@ -152,16 +153,14 @@ class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
                       ),
                     ),
                     Text(
-                      vacancyDetail["status"]!,
+                      vacancy.status == "Active" ? "Active" : "Inactive",
                       style: TextStyle(
                         fontFamily: "Lato",
-                        color: vacancyDetail["status"] == "Active"
+                        color: vacancy.status == "Active"
                             ? Colors.green
-                            : vacancyDetail["status"] == "Inactive"
-                                ? Colors.red
-                                : ColorsApp.Grey1,
+                            : Colors.redAccent,
                         fontSize: 12,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -169,8 +168,27 @@ class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
 
                 const SizedBox(height: 24),
 
+                // Capacity & Date
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _infoBox(
+                      title: "Capacity",
+                      value: vacancy.capacity.toString(),
+                      icon: Icons.people_alt_outlined,
+                    ),
+                    _infoBox(
+                      title: "Registration",
+                      value: "$startDateFormatted - $endDateFormatted",
+                      icon: Icons.calendar_month_outlined,
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
                 // Job Description
-                Text(
+                const Text(
                   "Job Description",
                   style: TextStyle(
                     fontFamily: "Lato",
@@ -181,7 +199,7 @@ class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
                 ),
                 const SizedBox(height: 16),
 
-                _description(vacancyDetail["description"] ?? ""),
+                _description(vacancy.description),
               ],
             ),
           ),
@@ -197,7 +215,9 @@ class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          onPressed: () {},
+          onPressed: () {
+            // TODO: Integrasikan dengan controller.applyToPosition(vacancy.id)
+          },
           child: const Text(
             'Apply',
             style: TextStyle(
@@ -212,8 +232,60 @@ class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
     );
   }
 
+  // --- Helper Widget untuk info box kecil ---
+  Widget _infoBox(
+      {required String title, required String value, required IconData icon}) {
+    return Expanded(
+      child: Container(
+        height: 80,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: ColorsApp.primarydark.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: ColorsApp.primarydark),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontFamily: "Lato",
+                      color: Colors.grey,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: "Lato",
+                      color: ColorsApp.black,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- Deskripsi expandable ---
   Widget _description(String text) {
-    return Container(
+    return SizedBox(
       height: 140,
       child: Stack(
         children: [
@@ -241,9 +313,7 @@ class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
                   ),
                   const SizedBox(height: 4),
                   GestureDetector(
-                    onTap: () {
-                      setState(() => isExpanded = !isExpanded);
-                    },
+                    onTap: () => setState(() => isExpanded = !isExpanded),
                     child: Text(
                       isExpanded ? "See less" : "See more..",
                       style: const TextStyle(
