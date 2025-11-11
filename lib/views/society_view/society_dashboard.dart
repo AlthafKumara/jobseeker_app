@@ -160,7 +160,10 @@ class _SocietyDashboardState extends State<SocietyDashboard> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        const SocietyListViewDashboard(),
+                        const SocietyListViewDashboard(
+                          limitItems: true,
+                          maxLength: 5,
+                        ),
                       ],
                     ),
                   ),

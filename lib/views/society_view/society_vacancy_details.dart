@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jobseeker_app/models/vacancy_model.dart';
+import 'package:jobseeker_app/views/society_view/society_apply.dart';
 import 'package:jobseeker_app/widgets/colors.dart';
 
 class SocietyVacancyDetails extends StatefulWidget {
@@ -216,7 +217,15 @@ class _SocietyVacancyDetailsState extends State<SocietyVacancyDetails> {
             ),
           ),
           onPressed: () {
-            // TODO: Integrasikan dengan controller.applyToPosition(vacancy.id)
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SocietyApply(
+                  
+                  vacancy: vacancy,
+                ),
+              ),
+            );
           },
           child: const Text(
             'Apply',

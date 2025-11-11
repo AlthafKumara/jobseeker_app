@@ -6,7 +6,19 @@ import 'package:jobseeker_app/views/society_view/society_vacancy_details.dart';
 import 'package:jobseeker_app/widgets/colors.dart';
 
 class SocietyListViewDashboard extends StatefulWidget {
-  const SocietyListViewDashboard({super.key});
+  final bool limitItems;
+  final int maxLength;
+
+  /// Jika [vacancies] diberikan, widget akan menampilkan daftar tersebut.
+  /// Jika null, akan fallback ke controller internal.
+  final List<VacancyModel>? vacancies;
+
+  const SocietyListViewDashboard({
+    super.key,
+    this.limitItems = true,
+    this.maxLength = 5,
+    this.vacancies,
+  });
 
   @override
   State<SocietyListViewDashboard> createState() =>
@@ -19,7 +31,10 @@ class _SocietyListViewDashboardState extends State<SocietyListViewDashboard> {
   @override
   void initState() {
     super.initState();
-    _fetchVacancies();
+    // Hanya fetch jika widget.vacancies == null (kalo kita memakai controller internal)
+    if (widget.vacancies == null) {
+      _fetchVacancies();
+    }
   }
 
   Future<void> _fetchVacancies() async {
@@ -29,25 +44,26 @@ class _SocietyListViewDashboardState extends State<SocietyListViewDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    if (_controller.isLoading) {
+    // Pilih sumber data: param > controller
+    final List<VacancyModel> sourceVacancies =
+        widget.vacancies ?? List.from(_controller.vacancies);
+
+    if (widget.vacancies == null && _controller.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_controller.errorMessage != null) {
+    if (widget.vacancies == null && _controller.errorMessage != null) {
       return Center(child: Text("Error: ${_controller.errorMessage}"));
     }
 
-    final List<VacancyModel> vacancies = List.from(_controller.vacancies)
-      ..shuffle();
+    final List<VacancyModel> vacancies = List.from(sourceVacancies)..shuffle();
 
     if (vacancies.isEmpty) {
       return const Center(child: Text("No vacancies available"));
     }
 
-    // 🔹 Tampilkan maksimal 5 lowongan di dashboard
-    final int maxLength = 5;
-    final visibleJobs = vacancies.length > maxLength
-        ? vacancies.sublist(0, maxLength)
+    final visibleJobs = widget.limitItems && vacancies.length > widget.maxLength
+        ? vacancies.sublist(0, widget.maxLength)
         : vacancies;
 
     return SizedBox(
@@ -67,7 +83,6 @@ class _SocietyListViewDashboardState extends State<SocietyListViewDashboard> {
               final String positionName = job.positionName ?? "-";
               final String? companyLogo = job.companyLogo;
 
-              // 🔹 Hitung selisih hari dari tanggal posting
               final DateTime startDate = job.submissionStartDate;
               final int daysAgo = DateTime.now().difference(startDate).inDays;
 
@@ -110,8 +125,7 @@ class _SocietyListViewDashboardState extends State<SocietyListViewDashboard> {
                                   child: Image.network(
                                     companyLogo,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error,
-                                            stackTrace) =>
+                                    errorBuilder: (context, error, stackTrace) =>
                                         const Icon(Icons.image_not_supported,
                                             color: ColorsApp.primarydark),
                                   ),
@@ -198,7 +212,7 @@ class _SocietyListViewDashboardState extends State<SocietyListViewDashboard> {
               );
             },
           ),
-          if (vacancies.length > maxLength)
+          if (widget.limitItems && vacancies.length > widget.maxLength)
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
