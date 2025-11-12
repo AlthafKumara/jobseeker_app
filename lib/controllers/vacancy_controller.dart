@@ -1,3 +1,4 @@
+import 'package:jobseeker_app/models/position_applied_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/vacancy_model.dart';
@@ -9,6 +10,7 @@ class VacancyController {
   // State data
   List<VacancyModel> vacancies = [];
   List<VacancyModel> companyVacancies = [];
+  List<PositionAppliedModel> myApplication = [];
   bool isLoading = false;
   String? errorMessage;
 
@@ -92,10 +94,10 @@ class VacancyController {
   }
 
   // === APPLY TO POSITION (Society) ===
-  Future<bool> applyToPosition(String positionId) async {
+  Future<bool> applyToPosition(String positionId, String cover_letter) async {
     errorMessage = null;
     try {
-      await _service.applyToPosition(positionId);
+      await _service.applyToPosition(positionId, cover_letter);
       return true;
     } catch (e) {
       errorMessage = e.toString();
@@ -107,12 +109,14 @@ class VacancyController {
   Future<bool> updateApplicantStatus({
     required String applicationId,
     required String status,
+    required String message,
   }) async {
     errorMessage = null;
     try {
       await _service.updateApplicationStatus(
         applicationId: applicationId,
         status: status,
+        message: message,
       );
       return true;
     } catch (e) {
@@ -130,6 +134,30 @@ class VacancyController {
     } catch (e) {
       errorMessage = e.toString();
       return [];
+    }
+  }
+
+  // === GET MY APPLICATIONS (Society) ===
+  Future<void> fetchMyApplications() async {
+    isLoading = true;
+    errorMessage = null;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null || token.isEmpty) {
+        throw Exception(
+            'Token pengguna tidak ditemukan. Silakan login kembali.');
+      }
+
+      myApplication = await _service.getMyApplications(token);
+    } catch (e) {
+      errorMessage = e.toString();
+      print('Error fetching applications: $errorMessage');
+      myApplication = [];
+    } finally {
+      isLoading = false;
     }
   }
 }

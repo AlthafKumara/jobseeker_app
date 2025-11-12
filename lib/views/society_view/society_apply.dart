@@ -2,10 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:jobseeker_app/controllers/portofolio_controller.dart';
+import 'package:jobseeker_app/controllers/vacancy_controller.dart';
 import 'package:jobseeker_app/models/portofolio_model.dart';
 import 'package:jobseeker_app/models/vacancy_model.dart';
 import 'package:jobseeker_app/utils/file_util.dart';
 import 'package:jobseeker_app/widgets/colors.dart';
+import 'package:jobseeker_app/widgets/customtextfield.dart';
 import 'package:open_filex/open_filex.dart';
 
 class SocietyApply extends StatefulWidget {
@@ -21,6 +23,10 @@ class SocietyApply extends StatefulWidget {
 
 class _SocietyApplyState extends State<SocietyApply> {
   final PortfolioController _portfolioController = PortfolioController();
+  final VacancyController _vacancyController = VacancyController();
+
+  final TextEditingController _coverLetterController = TextEditingController();
+
   File? _cvFile;
   bool _isLoading = false;
 
@@ -38,6 +44,39 @@ class _SocietyApplyState extends State<SocietyApply> {
     setState(() {
       _isLoading = false;
     });
+  }
+
+  Future<void> _submitapply() async {
+    setState(() => _isLoading = true);
+
+    try {
+      await _vacancyController.applyToPosition(
+        widget.vacancy.id,
+        _coverLetterController.text.trim(),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Apply success"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, "/society_vacancy");
+      }
+    }
   }
 
   @override
@@ -171,9 +210,23 @@ class _SocietyApplyState extends State<SocietyApply> {
                     ),
                   ),
 
+                const SizedBox(height: 24),
+                const Text(
+                  "Cover Letter",
+                  style: TextStyle(
+                    fontFamily: "Lato",
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: ColorsApp.black,
+                  ),
+                ),
                 const SizedBox(height: 12),
-
-                const SizedBox(height: 32),
+                CustomTextField(
+                  controller: _coverLetterController,
+                  hintText: "Insert cover letter......",
+                  maxLines: 10,
+                  enabled: !_isLoading,
+                ),
               ],
             ),
           ),
@@ -182,27 +235,48 @@ class _SocietyApplyState extends State<SocietyApply> {
       bottomNavigationBar: Padding(
         padding: EdgeInsets.symmetric(vertical: 24, horizontal: 30),
         child: ElevatedButton(
-                  onPressed: _cvFile != null ||
-                          _portfolioController.cvFilePath != null
-                      ? () {}
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorsApp.primarydark,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+          onPressed: _isLoading == true
+              ? null
+              : _cvFile != null || _portfolioController.cvFilePath != null
+                  ? () {
+                      _submitapply();
+                    }
+                  : null,
+          style: _isLoading == false
+              ? ElevatedButton.styleFrom(
+                  backgroundColor: ColorsApp.primarydark,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Text(
-                    "Apply Now",
-                    style: TextStyle(
-                      fontFamily: "Lato",
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
+                )
+              : ElevatedButton.styleFrom(
+                  backgroundColor: ColorsApp.Grey2,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
+          child: _isLoading == false
+              ? const Text(
+                  "Apply Now",
+                  style: TextStyle(
+                    fontFamily: "Lato",
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                )
+              : const Text(
+                  "Loading...",
+                  style: TextStyle(
+                    fontFamily: "Lato",
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+        ),
       ),
     );
   }

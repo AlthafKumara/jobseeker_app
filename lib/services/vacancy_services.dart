@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:jobseeker_app/models/position_applied_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/vacancy_model.dart';
 
@@ -91,12 +92,17 @@ class VacancyService {
   }
 
   // 4️⃣ APPLY to position (Society)
-  Future<void> applyToPosition(String positionId) async {
+  Future<void> applyToPosition(String positionId, String coverLetter) async {
     final token = await _getToken();
     final url = Uri.parse('$baseUrl/$positionId/apply');
-    final response = await http.post(url, headers: {
-      'x-auth-token': token!,
-    });
+    final response = await http.post(url,
+        headers: {
+          'x-auth-token': token!,
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'cover_letter': coverLetter,
+        }));
 
     if (response.statusCode != 200) {
       throw Exception(jsonDecode(response.body)['msg'] ?? 'Failed to apply');
@@ -107,6 +113,7 @@ class VacancyService {
   Future<void> updateApplicationStatus({
     required String applicationId,
     required String status, // ACCEPTED / REJECTED
+    required String message,
   }) async {
     final token = await _getToken();
     final url = Uri.parse('$baseUrl/applications/$applicationId');
@@ -116,7 +123,10 @@ class VacancyService {
         'x-auth-token': token!,
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({'status': status}),
+      body: jsonEncode({
+        'status': status,
+        'message': message,
+      }),
     );
 
     if (response.statusCode != 200) {
@@ -137,6 +147,27 @@ class VacancyService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to load applicants');
+    }
+  }
+
+  // 7️⃣ GET my applications (Society)
+
+  // === Get all applications for current society ===
+  Future<List<PositionAppliedModel>> getMyApplications(String token) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/my-applications'),
+      headers: {
+        'x-auth-token': token,
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => PositionAppliedModel.fromJson(json)).toList();
+    } else {
+      throw Exception(
+          'Gagal mengambil data lamaran: ${response.statusCode} - ${response.body}');
     }
   }
 }

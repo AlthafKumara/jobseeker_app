@@ -17,8 +17,8 @@ Future<void> openRemotePdf(String url, {String? fileName}) async {
     final file = File('${dir.path}/$safeName');
 
     // Simpan file ke lokal
+    
     await file.writeAsBytes(response.bodyBytes);
-
     // Buka file dengan OpenFilex
     final result = await OpenFilex.open(file.path);
     if (result.type != ResultType.done) {
