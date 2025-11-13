@@ -125,11 +125,22 @@ class VacancyController {
     }
   }
 
-  // === GET ALL APPLICANTS FOR A POSITION (HRD) ===
+  // === GET APPLICANTS FOR A POSITION (HRD) ===
   Future<List<dynamic>> getApplicants(String positionId) async {
     errorMessage = null;
     try {
       final applicants = await _service.getApplicants(positionId);
+      return applicants;
+    } catch (e) {
+      errorMessage = e.toString();
+      return [];
+    }
+  }
+
+  Future<List<dynamic>> getAllCompanyApplicants() async {
+    errorMessage = null;
+    try {
+      final applicants = await _service.getAllCompanyApplicants();
       return applicants;
     } catch (e) {
       errorMessage = e.toString();

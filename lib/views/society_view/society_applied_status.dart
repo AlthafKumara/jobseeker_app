@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:jobseeker_app/models/position_applied_model.dart';
 import 'package:jobseeker_app/models/vacancy_model.dart';
+import 'package:jobseeker_app/views/society_view/society_applied_result.dart';
 import 'package:jobseeker_app/widgets/colors.dart';
+import 'package:intl/intl.dart';
 
 class SocietyAppliedStatus extends StatelessWidget {
   final VacancyModel vacancy;
-  const SocietyAppliedStatus({super.key, required this.vacancy});
+  final PositionAppliedModel position;
+  const SocietyAppliedStatus(
+      {super.key, required this.vacancy, required this.position});
 
   @override
   Widget build(BuildContext context) {
+    DateTime reviewDate = position.applyDate.add(const Duration(days: 7));
+    String formattedDate = DateFormat('dd MMMM yyyy').format(reviewDate);
     return Scaffold(
       backgroundColor: ColorsApp.white,
       body: SafeArea(
@@ -47,7 +54,7 @@ class SocietyAppliedStatus extends StatelessWidget {
                 // 🔹 Info Lowongan
                 vacancyInfo(vacancy),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   "Track Your Application",
                   style: TextStyle(
                     fontFamily: "Lato",
@@ -57,11 +64,159 @@ class SocietyAppliedStatus extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Status : ",
+                      style: TextStyle(
+                        fontFamily: "Lato",
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: ColorsApp.black,
+                      ),
+                    ),
+                    Text(
+                      position.status ?? "-",
+                      style: TextStyle(
+                        fontFamily: "Lato",
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: position.status == "PENDING"
+                            ? Colors.orange
+                            : position.status == "REJECTED"
+                                ? Colors.red
+                                : position.status == "ACCEPTED"
+                                    ? Colors.green
+                                    : ColorsApp.Grey1,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                position.status == "PENDING"
+                    ? Container(
+                        height: MediaQuery.of(context).size.height * 0.3,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Your application is pending",
+                                style: TextStyle(
+                                  fontFamily: "Lato",
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: ColorsApp.black,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                "Estimated for the review until : $formattedDate",
+                                style: TextStyle(
+                                  fontFamily: "Lato",
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: ColorsApp.primarydark,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : Container(
+                        height: MediaQuery.of(context).size.height * 0.3,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Your application ${position.status}",
+                                style: TextStyle(
+                                  fontFamily: "Lato",
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: position.status == "REJECTED"
+                                      ? Colors.red
+                                      : position.status == "ACCEPTED"
+                                          ? Colors.green
+                                          : ColorsApp.Grey1,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                "Check below for more details",
+                                style: TextStyle(
+                                  fontFamily: "Lato",
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: ColorsApp.primarydark,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
               ],
             ),
           ),
         ),
       ),
+      bottomNavigationBar: position.status == "PENDING"
+          ? Padding(
+              padding: EdgeInsets.symmetric(vertical: 24, horizontal: 30),
+              child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/society_dashboard');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ColorsApp.primarydark,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text(
+                    "Go to Dashboard",
+                    style: TextStyle(
+                      fontFamily: "Lato",
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  )),
+            )
+          : Padding(
+              padding: EdgeInsets.symmetric(vertical: 24, horizontal: 30),
+              child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SocietyAppliedResult(
+                                  vacancy: vacancy,
+                                  position: position,
+                                )));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ColorsApp.primarydark,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text(
+                    "Review Response From Company",
+                    style: TextStyle(
+                      fontFamily: "Lato",
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  )),
+            ),
     );
   }
 

@@ -134,28 +134,35 @@ class PortfolioController with ChangeNotifier {
 
     try {
       final portfolios = await _societyController.getAllPortfolios();
-
       final cleanFileName = fileName ?? filePath.split('/').last;
 
+      Map<String, dynamic> result;
+
       if (portfolios.isNotEmpty) {
-        // Update CV (replace file lama)
-        await _societyController.updatePortfolio(
+        // Update CV
+        result = await _societyController.updatePortfolio(
           id: portfolios.first.id!,
           newFilePath: filePath,
         );
       } else {
-        // Tambah portofolio baru dengan CV
-        await _societyController.addPortfolio(filePath: filePath);
+        // Tambah portofolio baru
+        result = await _societyController.addPortfolio(filePath: filePath);
       }
 
-      // Pastikan nama file tidak berubah
-      cvFilePath = cleanFileName;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("✅ CV uploaded successfully")),
-      );
-
-      return true;
+      // 🔍 Cek hasil respons dari backend
+      if (result['success'] == true) {
+        cvFilePath = cleanFileName;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "✅ ${result['message'] ?? 'Portfolio updated successfully'}",
+            ),
+          ),
+        );
+        return true;
+      } else {
+        throw Exception(result['message'] ?? 'Failed to upload CV');
+      }
     } catch (e) {
       debugPrint('❌ Error uploadCv: $e');
       ScaffoldMessenger.of(context).showSnackBar(

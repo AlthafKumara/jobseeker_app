@@ -6,13 +6,15 @@ import 'package:jobseeker_app/widgets/colors.dart';
 
 class VacancyListView extends StatelessWidget {
   final List<VacancyModel> vacancies;
+  final VacancyModel? vacancy;
   final HrdModel? hrd;
   final String? status;
 
   const VacancyListView({
     super.key,
     required this.vacancies,
-    required this.hrd,
+    this.vacancy,
+    this.hrd,
     this.status,
   });
 
@@ -52,7 +54,7 @@ class VacancyListView extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) => HrdVacancyDetail(
                   vacancy: vacancy,
-                  hrd: hrd!,
+                  hrd: hrd,
                 ),
               ),
             );

@@ -19,6 +19,7 @@ class HrdDashboard extends StatefulWidget {
 class _HrdDashboardState extends State<HrdDashboard> {
   List<VacancyModel> _vacancies = [];
   HrdModel? _profile;
+  VacancyModel? _selectedVacancy;
   final VacancyController _vacancyController = VacancyController();
   final HrdController _controller = HrdController();
 
@@ -28,6 +29,7 @@ class _HrdDashboardState extends State<HrdDashboard> {
   bool _isLoadingVacancies = true;
   String _errorMessage = '';
   String? logoUrl;
+  String? positionId;
 
   Future<void> _loadLogo() async {
     final url = await _controller.loadInitialLogo();
@@ -133,10 +135,22 @@ class _HrdDashboardState extends State<HrdDashboard> {
                   height: 36,
                 ),
                 CustomTextField(
-                    controller: _searchcontroller,
-                    hintText: "Search",
-                    suffixIcon: Image.asset("assets/navbar/Search_on.png",
-                        width: 20, height: 20)),
+                  readOnly: true,
+                  ontap: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/hrd_search',
+                      arguments: {"fromdashboard": true},
+                    );
+                  },
+                  controller: _searchcontroller,
+                  hintText: "Search",
+                  suffixIcon: Image.asset(
+                    "assets/navbar/Search_on.png",
+                    width: 20,
+                    height: 20,
+                  ),
+                ),
                 SizedBox(height: 36),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -196,7 +210,9 @@ class _HrdDashboardState extends State<HrdDashboard> {
                   height: 400,
                   width: double.infinity,
                   margin: const EdgeInsets.only(bottom: 40),
-                  child: AppliedListView(),
+                  child: AppliedListView(
+                    controller: _vacancyController,
+                  ),
                 ),
               ],
             ),

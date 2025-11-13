@@ -155,6 +155,7 @@ class AppliedDetailsListview extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => SocietyAppliedStatus(
+                            position: applications[index],
                             vacancy: vacancy,
                           ),
                         ),

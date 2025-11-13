@@ -150,6 +150,22 @@ class VacancyService {
     }
   }
 
+  Future<List<dynamic>> getAllCompanyApplicants() async {
+    final token = await _getToken();
+    final url = Uri.parse('$baseUrl/company/applications');
+    final response = await http.get(url, headers: {
+      'x-auth-token': token!,
+      'Content-Type': 'application/json',
+    });
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['data'];
+    } else {
+      throw Exception('Failed to load all applicants');
+    }
+  }
+
   // 7️⃣ GET my applications (Society)
 
   // === Get all applications for current society ===

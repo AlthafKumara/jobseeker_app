@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jobseeker_app/controllers/vacancy_controller.dart';
 import 'package:jobseeker_app/models/vacancy_model.dart';
-import 'package:jobseeker_app/views/society_view/society_vacancy_details.dart';
+import 'package:jobseeker_app/views/hrd_view/hrd_vacancy_detail.dart';
+
 import 'package:jobseeker_app/widgets/colors.dart';
 
-class SocietyListViewDashboard extends StatefulWidget {
+class HrdListViewDashboard extends StatefulWidget {
   final bool limitItems;
   final int maxLength;
 
   final List<VacancyModel>? vacancies;
 
-  const SocietyListViewDashboard({
+  const HrdListViewDashboard({
     super.key,
     this.limitItems = true,
     this.maxLength = 5,
@@ -19,11 +20,10 @@ class SocietyListViewDashboard extends StatefulWidget {
   });
 
   @override
-  State<SocietyListViewDashboard> createState() =>
-      _SocietyListViewDashboardState();
+  State<HrdListViewDashboard> createState() => _HrdListViewDashboardState();
 }
 
-class _SocietyListViewDashboardState extends State<SocietyListViewDashboard> {
+class _HrdListViewDashboardState extends State<HrdListViewDashboard> {
   final VacancyController _controller = VacancyController();
 
   @override
@@ -191,8 +191,9 @@ class _SocietyListViewDashboardState extends State<SocietyListViewDashboard> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    SocietyVacancyDetails(vacancy: job),
+                                builder: (context) => HrdVacancyDetail(
+                                  vacancy: job,
+                                ),
                               ),
                             );
                           },

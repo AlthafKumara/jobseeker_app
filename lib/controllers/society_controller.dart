@@ -39,7 +39,7 @@ class SocietyController {
       final result = await _service.updateSocietyPhoto(imagePath: imagePath);
 
       if (result['success'] == true && result['profile'] != null) {
-        final updatedProfile = result['profile'] as Society;
+        final updatedProfile = Society.fromJson(result['profile']);
         return {
           'success': true,
           'message':

@@ -19,6 +19,7 @@ class HrdVacancy extends StatefulWidget {
 class _HrdVacancyState extends State<HrdVacancy> {
   List<VacancyModel> _vacancies = [];
   HrdModel? _profile;
+  VacancyModel? _selectedVacancy;
   final VacancyController _vacancyController = VacancyController();
   final HrdController _controller = HrdController();
 
@@ -28,6 +29,7 @@ class _HrdVacancyState extends State<HrdVacancy> {
   bool _isLoadingVacancies = true;
   String _errorMessage = '';
   String? logoUrl;
+  String? positionId;
   int selectedStatus = 0;
 
   final List<String> statuses = [
@@ -232,7 +234,9 @@ class _HrdVacancyState extends State<HrdVacancy> {
                               height: MediaQuery.of(context).size.height * 0.8,
                               width: double.infinity,
                               margin: const EdgeInsets.only(bottom: 40),
-                              child: AppliedListView(),
+                              child: AppliedListView(
+                                controller: _vacancyController,
+                              ),
                             )
                           : Center(child: Text("Error")),
                 ),
