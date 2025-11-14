@@ -185,11 +185,11 @@ class SocietyService {
       final data = jsonDecode(responseBody);
 
       if (response.statusCode == 200 && data['success'] == true) {
-        final profile = Society.fromJson(data['profile']);
+        final profile = Society.fromJson(data['data']);
         return {
           'success': true,
           'message': data['message'] ?? 'Profile photo updated successfully',
-          'profile': profile,
+          'data': profile,
         };
       } else {
         return {

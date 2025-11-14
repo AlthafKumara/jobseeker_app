@@ -66,14 +66,13 @@ class _HrdAppliedDetailsState extends State<HrdAppliedDetails> {
                 const SizedBox(height: 24),
 
                 // 🔹 Vacancy Info
-                vacancyInfo(vacancy),
-
+                vacancyInfo(vacancy, applicant),
                 const SizedBox(height: 24),
 
                 // 🔹 Applicant Info
-                Text(
+                const Text(
                   "Applicant",
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: "Lato",
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -82,18 +81,16 @@ class _HrdAppliedDetailsState extends State<HrdAppliedDetails> {
                 ),
                 const SizedBox(height: 12),
                 applicantInfo(society, vacancy),
-
                 const SizedBox(height: 20),
 
                 // 🔹 Resume Button
                 _buildResumeButton(portfolio),
-
                 const SizedBox(height: 24),
 
                 // 🔹 Cover Letter
-                Text(
+                const Text(
                   "Cover Letter",
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: "Lato",
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -115,13 +112,12 @@ class _HrdAppliedDetailsState extends State<HrdAppliedDetails> {
           ),
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 36),
-        child: _buildbutton(
-          applicant,
-          vacancy,
-        ),
-      ),
+      bottomNavigationBar: applicant.status == "PENDING"
+          ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 36),
+              child: _buildbutton(applicant, vacancy),
+            )
+          : null,
     );
   }
 
@@ -156,19 +152,14 @@ class _HrdAppliedDetailsState extends State<HrdAppliedDetails> {
                     color: ColorsApp.white, size: 20),
           ),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                society["name"] ?? "Unknown",
-                style: const TextStyle(
-                  fontFamily: "Lato",
-                  color: ColorsApp.black,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          Text(
+            society["name"] ?? "Unknown",
+            style: const TextStyle(
+              fontFamily: "Lato",
+              color: ColorsApp.black,
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -179,13 +170,11 @@ class _HrdAppliedDetailsState extends State<HrdAppliedDetails> {
   Widget _buildResumeButton(Map<String, dynamic> portfolio) {
     return GestureDetector(
       onTap: () async {
-        if (portfolio["file"] != null &&
-            portfolio["file"].toString().isNotEmpty) {
+        final fileUrl = portfolio["file"];
+        if (fileUrl != null && (fileUrl as String).isNotEmpty) {
           openRemotePdf(
-            portfolio["file"]!,
-            fileName: Uri.decodeComponent(
-              portfolio["file"]!.split('/').last,
-            ),
+            fileUrl,
+            fileName: Uri.decodeComponent(fileUrl.split('/').last),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -209,28 +198,19 @@ class _HrdAppliedDetailsState extends State<HrdAppliedDetails> {
         ),
         child: Row(
           children: [
-            Image.asset(
-              "assets/image/pdf.png",
-              width: 32,
-              height: 32,
-            ),
+            Image.asset("assets/image/pdf.png", width: 32, height: 32),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    // 🔹 Bersihkan "%20" dari nama file
-                    Uri.decodeComponent(
-                      portfolio["file"]!.split('/').last,
-                    ),
-                    style: const TextStyle(
-                      fontFamily: "Lato",
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+              child: Text(
+                Uri.decodeComponent(
+                  (portfolio["file"] ?? "No File").toString().split('/').last,
+                ),
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontFamily: "Lato",
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -240,11 +220,12 @@ class _HrdAppliedDetailsState extends State<HrdAppliedDetails> {
   }
 
   // 🔹 Vacancy Info Section
-  Widget vacancyInfo(VacancyModel vacancy) {
+  Widget vacancyInfo(VacancyModel vacancy, PositionAppliedModel applicant) {
     final companyLogo = vacancy.companyLogo ?? "";
     final companyName = vacancy.companyName ?? "-";
     final position = vacancy.positionName;
     final address = vacancy.companyAddress ?? "-";
+    final status = applicant.status;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -290,6 +271,7 @@ class _HrdAppliedDetailsState extends State<HrdAppliedDetails> {
               children: [
                 Text(
                   companyName,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -299,6 +281,7 @@ class _HrdAppliedDetailsState extends State<HrdAppliedDetails> {
                 const SizedBox(height: 4),
                 Text(
                   position,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -308,6 +291,7 @@ class _HrdAppliedDetailsState extends State<HrdAppliedDetails> {
                 const SizedBox(height: 4),
                 Text(
                   address,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
@@ -318,46 +302,55 @@ class _HrdAppliedDetailsState extends State<HrdAppliedDetails> {
               ],
             ),
           ),
+          Text(
+            status ?? "-",
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              fontFamily: "Lato",
+              color: status == "REJECTED"
+                  ? Colors.red
+                  : status == "ACCEPTED"
+                      ? Colors.green
+                      : status == "PENDING"
+                          ? Colors.orange
+                          : ColorsApp.Grey1,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildbutton(PositionAppliedModel applicant, VacancyModel vacancy) {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: ColorsApp.white,
-              backgroundColor: ColorsApp.primarydark,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => HrdDecision(
-                    vacancy: vacancy,
-                    position: applicant,
-                    controller: VacancyController(),
-                  ),
-                ),
-              );
-            },
-            child: const Text(
-              "Make A Decision",
-              style: TextStyle(
-                fontFamily: "Lato",
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-              ),
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        foregroundColor: ColorsApp.white,
+        backgroundColor: ColorsApp.primarydark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HrdDecision(
+              vacancy: vacancy,
+              position: applicant,
+              controller: VacancyController(),
             ),
           ),
+        );
+      },
+      child: const Text(
+        "Make A Decision",
+        style: TextStyle(
+          fontFamily: "Lato",
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
         ),
-      ],
+      ),
     );
   }
 }
